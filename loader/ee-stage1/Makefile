@@ -4,8 +4,8 @@ EE_SRC_DIR = src/
 
 EE_TARGET=ee-stage1
 EE_BIN = $(EE_BIN_DIR)$(EE_TARGET).elf
-EE_BIN_RAW = $(EE_BIN_DIR)$(EE_TARGET).bin
 EE_BIN_STRIPPED = $(EE_BIN_DIR)$(EE_TARGET).stripped.elf
+EE_BIN_RAW = $(EE_BIN_DIR)$(EE_TARGET).bin
 
 EE_OBJS = main.o
 EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
@@ -15,6 +15,7 @@ EE_LDFLAGS += -nostartfiles -Wl,--gc-sections
 
 EE_INCS += -I../lib
 EE_CFLAGS += -Os \
+    -DEE_STAGE_1_ADDR=${EE_STAGE_1_ADDR} \
     -DEE_STAGE_2_ADDR=${EE_STAGE_2_ADDR} \
     -DEE_STAGE_2_SIZE=${EE_STAGE_2_SIZE} \
     -DEE_STAGE_2_CHECKSUM=${EE_STAGE_2_CHECKSUM}
@@ -26,14 +27,14 @@ all:
 	$(if $(EE_STAGE_2_ADDR), $(), $(error EE_STAGE_2_ADDR not specified))
 	$(if $(EE_STAGE_2_SIZE), $(), $(error EE_STAGE_2_SIZE not specified))
 	$(if $(EE_STAGE_2_CHECKSUM), $(), $(error EE_STAGE_2_CHECKSUM not specified))
-	$(MAKE) $(EE_BIN_RAW)
+	$(MAKE) with_embedded_checksum
 
 # rm'ing EE_LINKFILE might result in deleting the linkfile from SDK, if local variable is unset
 clean:
 	rm -rf $(EE_OBJS_DIR) $(EE_BIN_DIR) linkfile
 
 linkfile:
-	cp ../linkfile.in linkfile
+	cp linkfile.in linkfile
 	sed -i s/@LOAD_ADDR@/${EE_STAGE_1_ADDR}/ linkfile
 
 $(EE_BIN): linkfile
@@ -43,6 +44,12 @@ $(EE_BIN_STRIPPED): $(EE_BIN)
 
 $(EE_BIN_RAW): $(EE_BIN_STRIPPED)
 	$(EE_OBJCOPY) -O binary -v $< $@
+
+embed_stage1_checksum: $(EE_BIN_DIR)
+	gcc -I../lib tools/embed_stage1_checksum.c -o $(EE_BIN_DIR)embed_stage1_checksum
+
+with_embedded_checksum: embed_stage1_checksum $(EE_BIN_RAW)
+	$(EE_BIN_DIR)embed_stage1_checksum $(EE_BIN_RAW)
 
 $(EE_BIN_DIR):
 	@mkdir -p $@

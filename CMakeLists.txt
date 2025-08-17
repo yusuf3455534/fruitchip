@@ -50,6 +50,8 @@ add_custom_command(
         loader/ee-stage2/bin/ee-stage2.bin
         loader/ee-stage1/bin/ee-stage1.bin
         loader/_always_rerun
+    DEPENDS
+        ps2bbl/bin/COMPRESSED_PS2BBL.ELF
     COMMAND make clean && make EE_STAGE_3_FILE=../ps2bbl/bin/COMPRESSED_PS2BBL.ELF
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/loader
 )

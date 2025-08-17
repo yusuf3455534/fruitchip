@@ -33,7 +33,7 @@ clean:
 	rm -rf $(EE_OBJS_DIR) $(EE_BIN_DIR) linkfile
 
 linkfile:
-	cp ../linkfile.in linkfile
+	cp linkfile.in linkfile
 	sed -i s/@LOAD_ADDR@/${EE_STAGE_2_ADDR}/ linkfile
 
 $(EE_BIN): linkfile

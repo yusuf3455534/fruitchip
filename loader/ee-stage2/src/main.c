@@ -33,8 +33,7 @@ void __attribute__((section(".entry"))) __start()
     _InitSys();
 
     sio_puts("EE2: exec");
-    char *argv[2];
+    static char *argv[2];
     argv[0] = "payload";
-    argv[1] = "payload";
-    ExecPS2FromMemory((void *)EE_STAGE_3_ADDR, 2, argv);
+    ExecPS2FromMemory((void *)EE_STAGE_3_ADDR, 1, argv);
 }

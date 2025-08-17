@@ -7,12 +7,18 @@
 
 #include "boot_rom_passive_reader.pio.h"
 #include "utils.h"
-#include "loader_ee.h"
+#include "loader.h"
 
 #define BOOT_ROM_READ_SNIFFER_SM 0
 #define BOOT_ROM_WRITE_SNIFFER_SM 1
 #define BOOT_ROM_DATA_OUT_SM 2
 #define BOOT_ROM_DATA_PINDIRS_SWITCHER_SM 3
+
+int boot_rom_read_sniffer_offset;
+int boot_rom_write_sniffer_offset;
+int boot_rom_data_out_offset;
+int boot_rom_data_pindirs_switcher_offset;
+
 
 #define TX_DATA_OUT_DMA_CHAN 0
 
@@ -22,29 +28,32 @@ static inline void start_data_out_transfer(const volatile void *read_addr, uint3
     pio_interrupt_set(pio0, DATA_IN_PAUSED_IRQ); // pause sniffer
     dma_channel_transfer_from_buffer_now(TX_DATA_OUT_DMA_CHAN, read_addr, encoded_transfer_count);
     pio_interrupt_clear(pio0, DATA_OUT_PAUSED_IRQ); // resume data out
+
+    // reset sniffers
+    pio_restart_sm_mask(pio0, (1 << BOOT_ROM_READ_SNIFFER_SM) | (1 << BOOT_ROM_WRITE_SNIFFER_SM));
+    pio_sm_exec(pio0, BOOT_ROM_READ_SNIFFER_SM, pio_encode_jmp(boot_rom_read_sniffer_offset));
+    pio_sm_exec(pio0, BOOT_ROM_WRITE_SNIFFER_SM, pio_encode_jmp(boot_rom_write_sniffer_offset));
 }
 
 void handle_write_idle(uint8_t w);
-void handle_write_payload_0_C0h_seen(uint8_t w);
-void handle_write_payload_0_C1h_seen(uint8_t w);
 
 void (*write_handler)(uint8_t) = &handle_write_idle;
 
-void __time_critical_func(handle_write_idle)(uint8_t w) {
-    switch (w) {
-        case 0xC0: write_handler = &handle_write_payload_0_C0h_seen; break;
-        case 0xC1: write_handler = &handle_write_payload_0_C1h_seen; break;
-    }
+void __time_critical_func(handle_write_payload_ee_stage3)(uint8_t w) {
+    if (w == 0xCC) start_data_out_transfer(LOADER_EE_STAGE3, sizeof(LOADER_EE_STAGE3));
+    write_handler = &handle_write_idle;
 }
 
-void __time_critical_func(handle_write_payload_0_C0h_seen)(uint8_t w) {
+void __time_critical_func(handle_write_payload_ee_stage2)(uint8_t w) {
     if (w == 0xCB) start_data_out_transfer(LOADER_EE_STAGE2, sizeof(LOADER_EE_STAGE2));
     write_handler = &handle_write_idle;
 }
 
-void __time_critical_func(handle_write_payload_0_C1h_seen)(uint8_t w) {
-    if (w == 0xCC) start_data_out_transfer(LOADER_EE_STAGE3, sizeof(LOADER_EE_STAGE3));
-    write_handler = &handle_write_idle;
+void __time_critical_func(handle_write_idle)(uint8_t w) {
+    switch (w) {
+        case 0xC0: write_handler = &handle_write_payload_ee_stage2; break;
+        case 0xC1: write_handler = &handle_write_payload_ee_stage3; break;
+    }
 }
 
 void __time_critical_func(core1_byte_out_irq_handler)() {
@@ -61,6 +70,11 @@ void __time_critical_func(core1_byte_out_irq_handler)() {
 
     pio_interrupt_set(pio0, DATA_OUT_PAUSED_IRQ); // pause data out
     pio_interrupt_clear(pio0, DATA_IN_PAUSED_IRQ); // resume sniffer
+
+    // reset data out
+    pio_restart_sm_mask(pio0, (1 << BOOT_ROM_DATA_OUT_SM) | (1 <<BOOT_ROM_DATA_PINDIRS_SWITCHER_SM));
+    pio_sm_exec(pio0, BOOT_ROM_DATA_OUT_SM, pio_encode_jmp(boot_rom_data_out_offset));
+    pio_sm_exec(pio0, BOOT_ROM_DATA_PINDIRS_SWITCHER_SM, pio_encode_jmp(boot_rom_data_pindirs_switcher_offset));
 }
 
 void __time_critical_func(core1_main)() {
@@ -72,7 +86,6 @@ void __time_critical_func(core1_main)() {
     while (true) {
         uint8_t w = pio_sm_get_blocking(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
         write_handler(w);
-        printf("w: %x\n", w);
     }
 }
 
@@ -184,16 +197,16 @@ int __time_critical_func(main)() {
     pio_interrupt_clear(pio0, DATA_IN_PAUSED_IRQ);
     pio_interrupt_set(pio0, DATA_OUT_PAUSED_IRQ);
 
-    int boot_rom_read_sniffer_offset = pio_add_program(pio0, &boot_rom_read_sniffer_program);
+    boot_rom_read_sniffer_offset = pio_add_program(pio0, &boot_rom_read_sniffer_program);
     boot_rom_read_sniffer_init_and_start(pio0, BOOT_ROM_READ_SNIFFER_SM, boot_rom_read_sniffer_offset);
 
-    int boot_rom_write_sniffer_offset = pio_add_program(pio0, &boot_rom_write_sniffer_program);
+    boot_rom_write_sniffer_offset = pio_add_program(pio0, &boot_rom_write_sniffer_program);
     boot_rom_write_sniffer_init_and_start(pio0, BOOT_ROM_WRITE_SNIFFER_SM, boot_rom_write_sniffer_offset);
 
-    int boot_rom_data_out_offset = pio_add_program(pio0, &boot_rom_data_out_program);
+    boot_rom_data_out_offset = pio_add_program(pio0, &boot_rom_data_out_program);
     boot_rom_data_out_init_and_start(pio0, BOOT_ROM_DATA_OUT_SM, boot_rom_data_out_offset);
 
-    int boot_rom_data_pindirs_switcher_offset = pio_add_program(pio0, &boot_rom_data_pindirs_switcher_program);
+    boot_rom_data_pindirs_switcher_offset = pio_add_program(pio0, &boot_rom_data_pindirs_switcher_program);
     boot_rom_data_pindirs_switcher_init_and_start(pio0, BOOT_ROM_DATA_PINDIRS_SWITCHER_SM, boot_rom_data_pindirs_switcher_offset);
 
     // configure data out DMA
