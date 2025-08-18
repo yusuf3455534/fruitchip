@@ -29,7 +29,7 @@ void __attribute__((section(".entry"))) __start()
         modchip_poke(0xCB);
 
         sio_puts("EE1: reading");
-        for (u64 i = 0; i < EE_STAGE_2_SIZE; i += 4)
+        for (uiptr i = 0; i < EE_STAGE_2_SIZE; i += 4)
             *(volatile u32 *)(EE_STAGE_2_ADDR + i) = modchip_peek();
 
         u16 checksum = fletcher16((void *)EE_STAGE_2_ADDR, EE_STAGE_2_SIZE);
