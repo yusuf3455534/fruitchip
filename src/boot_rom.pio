@@ -19,9 +19,11 @@
 .define PUBLIC DATA_OUT_PAUSED_IRQ 5
 
 .program boot_rom_read_sniffer
+ce_high:
     wait 0 irq DATA_IN_PAUSED_IRQ
-    wait 0 gpio BOOT_ROM_CE_PIN
     wait 0 gpio BOOT_ROM_OE_PIN [5] // 20.83 ns @ 240 MHz
+    jmp pin ce_high
+ce_low:
     in pins, 8
     wait 1 gpio BOOT_ROM_OE_PIN
 // 5 instructions
