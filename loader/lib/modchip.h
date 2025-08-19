@@ -18,9 +18,7 @@ inline static void modchip_poke(u8 byte)
 
 inline static u32 modchip_peek()
 {
-    u32 v = *(volatile u32*)BOOT_ROM_ADDR;
-    // usleep(2);
-    return v;
+    return *(volatile u32*)BOOT_ROM_ADDR;
 }
 
 #endif // __MODCHIP_H__
