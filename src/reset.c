@@ -2,6 +2,8 @@
 #include <hardware/timer.h>
 
 #include "boot_rom_data_out.h"
+#include "boot_rom_read_handler.h"
+#include "boot_rom_write_handler.h"
 
 static void __time_critical_func(reset_pressed)(uint gpio, uint32_t event_mask)
 {
@@ -20,9 +22,44 @@ static void __time_critical_func(reset_pressed)(uint gpio, uint32_t event_mask)
             // which will result PS2 in reading wrong data and fail to boot,
             // and if data transfer was particularly large, console won't boot even after multiple resets,
             // as data out will still be active.
-            boot_rom_data_out_stop();
-            boot_rom_sniffers_reset();
+
+            pio_set_sm_mask_enabled(
+                pio0,
+                (1 << BOOT_ROM_READ_SNIFFER_SM)
+                | (1 << BOOT_ROM_WRITE_SNIFFER_SM)
+                | (1 << BOOT_ROM_DATA_OUT_SM)
+                | (1 << BOOT_ROM_DATA_PINDIRS_SWITCHER_SM),
+                false
+            );
+
             boot_rom_data_out_reset();
+            boot_rom_sniffers_reset();
+
+            boot_rom_data_out_stop();
+
+            dma_channel_abort(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN);
+            dma_channel_abort(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN);
+
+            pio_sm_clear_fifos(pio0, BOOT_ROM_READ_SNIFFER_SM);
+            pio_sm_clear_fifos(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
+            pio_sm_clear_fifos(pio0, BOOT_ROM_DATA_OUT_SM);
+            pio_sm_clear_fifos(pio0, BOOT_ROM_DATA_PINDIRS_SWITCHER_SM);
+
+            pio_sm_drain_tx_fifo(pio0, BOOT_ROM_READ_SNIFFER_SM);
+            pio_sm_drain_tx_fifo(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
+            pio_sm_drain_tx_fifo(pio0, BOOT_ROM_DATA_OUT_SM);
+            pio_sm_drain_tx_fifo(pio0, BOOT_ROM_DATA_PINDIRS_SWITCHER_SM);
+
+            pio_enable_sm_mask_in_sync(
+                pio0,
+                (1 << BOOT_ROM_READ_SNIFFER_SM)
+                | (1 << BOOT_ROM_WRITE_SNIFFER_SM)
+                | (1 << BOOT_ROM_DATA_OUT_SM)
+                | (1 << BOOT_ROM_DATA_PINDIRS_SWITCHER_SM)
+            );
+
+            read_handler = handle_read_idle;
+            write_handler = handle_write_idle;
 
             last_reset_us = time_us_64();
         }
