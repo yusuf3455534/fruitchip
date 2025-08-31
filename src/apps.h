@@ -54,7 +54,7 @@ inline static uint32_t apps_partition_entries_count()
 inline static uint8_t *apps_partition_entry_addr(uint32_t idx)
 {
     uint32_t offset = *(uint32_t *)(APPS_PARTITION_OFFSET + 0x10 + (idx * 2 * sizeof(uint32_t)));
-    return (uint8_t *)offset;
+    return (uint8_t *)(APPS_PARTITION_OFFSET + offset);
 }
 
 inline static uint32_t apps_partition_entry_length(uint32_t idx)
