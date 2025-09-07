@@ -24,11 +24,11 @@ int __time_critical_func(main)()
 
     if (!apps_partition_detect())
     {
-        colored_status_led_set_on_with_color(PICO_COLORED_STATUS_LED_COLOR_FROM_RGB(0xaa, 0x00, 0x00)); // red
+        colored_status_led_set_on_with_color(PICO_COLORED_STATUS_LED_COLOR_FROM_RGB(0x10, 0x00, 0x00)); // red
         panic("Apps partition header not found");
     }
 
-    colored_status_led_set_on_with_color(PICO_COLORED_STATUS_LED_COLOR_FROM_RGB(0x00, 0x40, 0x00)); // green
+    colored_status_led_set_on_with_color(PICO_COLORED_STATUS_LED_COLOR_FROM_RGB(0x00, 0x10, 0x00)); // green
 
     reset_init_irq();
 
