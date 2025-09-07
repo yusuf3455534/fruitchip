@@ -66,5 +66,5 @@ inline static void apps_partition_start_entry_data_out(uint32_t entry_idx)
 {
     uint8_t *addr = apps_partition_entry_addr(entry_idx);
     uint32_t len = apps_partition_entry_length(entry_idx);
-    boot_rom_data_out_start(addr, len);
+    boot_rom_data_out_start_data_without_status_code(addr, len);
 }

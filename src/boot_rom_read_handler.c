@@ -246,11 +246,11 @@ void __time_critical_func(handle_read_syscall_2_03h_seen)(uint8_t r)
 {
     switch (r)
     {
-        [[fallthrough]];
         case 0x24:
             // 07 00 03[24] 0C 00 00 00  08 00 E0 03  00 00 00 00
-            dma_data_out_start_transfer(LOADER_EE_STAGE_1, sizeof(LOADER_EE_STAGE_1));
+            boot_rom_data_out_start_data_without_status_code(LOADER_EE_STAGE_1, sizeof(LOADER_EE_STAGE_1));
             osdsys_bytes_read += 1;
+            [[fallthrough]];
         default:
             read_handler = &handle_read_osdsys_size_seen;
             osdsys_bytes_read = 0;

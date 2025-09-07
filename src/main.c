@@ -17,7 +17,7 @@ int __time_critical_func(main)()
     set_sys_clock_khz(hz * KHZ, true);
     clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, hz * MHZ, hz * MHZ);
 
-    boot_rom_data_out_init(pio0);
+    boot_rom_data_out_init();
 
     // status led claims unused SM for WS2812, call it after claiming SMs for data out
     status_led_init();

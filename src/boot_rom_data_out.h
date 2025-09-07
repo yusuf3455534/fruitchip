@@ -1,30 +1,23 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "hardware/dma.h"
 #include "hardware/pio.h"
 
 #include "boot_rom.pio.h"
 
-#define BOOT_ROM_DATA_OUT_DMA_CHAN 0
+#define BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN 0
+#define BOOT_ROM_DATA_OUT_DATA_DMA_CHAN 1
+#define BOOT_ROM_DATA_OUT_NULL_DMA_CHAN 2
 
-inline static void pio_interrupt_set(PIO pio, uint pio_interrupt_num)
-{
-    check_pio_param(pio);
-    invalid_params_if(HARDWARE_PIO, pio_interrupt_num >= 8);
-    pio->irq_force = (1u << pio_interrupt_num);
-}
+extern uint32_t _boot_rom_data_out_status_code;
+extern uint8_t _zero;
 
 void boot_rom_byte_out_irq_handler();
 
-inline static void boot_rom_data_out_stop()
-{
-    pio_interrupt_set(pio0, BOOT_ROM_DATA_OUT_PAUSED_IRQ); // pause data out
-    pio_interrupt_clear(pio0, BOOT_ROM_DATA_IN_PAUSED_IRQ); // resume sniffer
-}
-
-inline static void boot_rom_data_out_init(PIO pio)
+inline static void boot_rom_data_out_init()
 {
     gpio_pull_up(BOOT_ROM_Q0_PIN + 0);
     gpio_pull_up(BOOT_ROM_Q0_PIN + 1);
@@ -47,51 +40,93 @@ inline static void boot_rom_data_out_init(PIO pio)
     gpio_set_drive_strength(BOOT_ROM_Q0_PIN + 7, GPIO_DRIVE_STRENGTH_12MA);
 
     // assign hardcoded SM indices to avoid runtime calculations of masks
-    pio_sm_claim(pio, BOOT_ROM_READ_SNIFFER_SM);
-    pio_sm_claim(pio, BOOT_ROM_WRITE_SNIFFER_SM);
-    pio_sm_claim(pio, BOOT_ROM_DATA_OUT_SM);
-    pio_sm_claim(pio, BOOT_ROM_DATA_PINDIRS_SWITCHER_SM);
-
-    // setup initial IRQ state, start with data out paused
-    boot_rom_data_out_stop();
+    pio_sm_claim(pio0, BOOT_ROM_READ_SNIFFER_SM);
+    pio_sm_claim(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
+    pio_sm_claim(pio0, BOOT_ROM_DATA_OUT_SM);
 
     // load programs in specific order to match the statically calculated offsets
-    int offset = pio_add_program(pio, &boot_rom_read_sniffer_program);
-    boot_rom_read_sniffer_init_and_start(pio, BOOT_ROM_READ_SNIFFER_SM, boot_rom_read_sniffer_offset);
+    int offset = pio_add_program(pio0, &boot_rom_read_sniffer_program);
+    boot_rom_read_sniffer_sm_init_and_start(pio0, BOOT_ROM_READ_SNIFFER_SM, boot_rom_read_sniffer_offset);
     if (boot_rom_read_sniffer_offset != offset) panic("Read sniffer loaded at unexpected offset");
 
-    offset = pio_add_program(pio, &boot_rom_write_sniffer_program);
-    boot_rom_write_sniffer_init_and_start(pio, BOOT_ROM_WRITE_SNIFFER_SM, boot_rom_write_sniffer_offset);
+    offset = pio_add_program(pio0, &boot_rom_write_sniffer_program);
+    boot_rom_write_sniffer_sm_init_and_start(pio0, BOOT_ROM_WRITE_SNIFFER_SM, boot_rom_write_sniffer_offset);
     if (boot_rom_write_sniffer_offset != offset) panic("Write sniffer loaded at unexpected offset");
 
-    offset = pio_add_program(pio, &boot_rom_data_out_program);
-    boot_rom_data_out_init_and_start(pio, BOOT_ROM_DATA_OUT_SM, boot_rom_data_out_offset);
+    offset = pio_add_program(pio0, &boot_rom_data_out_program);
+    boot_rom_data_out_sm_init(pio0, BOOT_ROM_DATA_OUT_SM, boot_rom_data_out_offset);
     if (boot_rom_data_out_offset != offset) panic("Data out loaded at unexpected offset");
 
-    offset = pio_add_program(pio, &boot_rom_data_pindirs_switcher_program);
-    boot_rom_data_pindirs_switcher_init_and_start(pio, BOOT_ROM_DATA_PINDIRS_SWITCHER_SM, boot_rom_data_pindirs_switcher_offset);
-    if (boot_rom_data_pindirs_switcher_offset != offset) panic("Pindirs switcher loaded at unexpected offset");
+    dma_channel_config dma_tx_status_conf;
+    dma_channel_claim(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN);
+    dma_tx_status_conf = dma_channel_get_default_config(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN);
+    channel_config_set_transfer_data_size(&dma_tx_status_conf, DMA_SIZE_8);
+    channel_config_set_read_increment(&dma_tx_status_conf, true);
+    channel_config_set_write_increment(&dma_tx_status_conf, false);
+    channel_config_set_dreq(&dma_tx_status_conf, pio_get_dreq(pio0, BOOT_ROM_DATA_OUT_SM, true));
+    channel_config_set_chain_to(&dma_tx_status_conf, BOOT_ROM_DATA_OUT_DATA_DMA_CHAN);
+    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, false);
+    dma_channel_set_write_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &pio0->txf[BOOT_ROM_DATA_OUT_SM], false);
+    dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, sizeof(_boot_rom_data_out_status_code), false);
 
     dma_channel_config dma_tx_data_conf;
-    dma_channel_claim(BOOT_ROM_DATA_OUT_DMA_CHAN);
-    dma_tx_data_conf = dma_channel_get_default_config(BOOT_ROM_DATA_OUT_DMA_CHAN);
+    dma_channel_claim(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN);
+    dma_tx_data_conf = dma_channel_get_default_config(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN);
     channel_config_set_transfer_data_size(&dma_tx_data_conf, DMA_SIZE_8);
     channel_config_set_read_increment(&dma_tx_data_conf, true);
     channel_config_set_write_increment(&dma_tx_data_conf, false);
-    channel_config_set_dreq(&dma_tx_data_conf, pio_get_dreq(pio, BOOT_ROM_DATA_OUT_SM, true));
-    dma_channel_set_write_addr(BOOT_ROM_DATA_OUT_DMA_CHAN, &pio->txf[BOOT_ROM_DATA_OUT_SM], false);
-    dma_channel_set_config(BOOT_ROM_DATA_OUT_DMA_CHAN, &dma_tx_data_conf, false);
+    channel_config_set_dreq(&dma_tx_data_conf, pio_get_dreq(pio0, BOOT_ROM_DATA_OUT_SM, true));
+    channel_config_set_chain_to(&dma_tx_data_conf, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN);
+    dma_channel_set_write_addr(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, &pio0->txf[BOOT_ROM_DATA_OUT_SM], false);
 
-    pio_set_irq0_source_enabled(pio, pis_interrupt0 + BOOT_ROM_BYTE_OUT_IRQ, true);
-    irq_set_exclusive_handler(PIO0_IRQ_0 + NUM_PIO_IRQS * PIO_NUM(pio), boot_rom_byte_out_irq_handler);
-    irq_set_enabled(PIO0_IRQ_0 + NUM_PIO_IRQS * PIO_NUM(pio), true);
+    // pad the data with a dummy byte.
+    // checking if TX FIFO is empty doesn't tell if data is on the bus or not,
+    // by adding one more byte to the transfer, when this byte is pulled from FIFO
+    // we know that the last byte of data was on the bus and it's safe to stop data out
+    dma_channel_config dma_tx_null_conf;
+    dma_channel_claim(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN);
+    dma_tx_null_conf = dma_channel_get_default_config(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN);
+    channel_config_set_transfer_data_size(&dma_tx_null_conf, DMA_SIZE_8);
+    channel_config_set_read_increment(&dma_tx_null_conf, false);
+    channel_config_set_write_increment(&dma_tx_null_conf, false);
+    channel_config_set_dreq(&dma_tx_null_conf, pio_get_dreq(pio0, BOOT_ROM_DATA_OUT_SM, true));
+    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, &_zero, false);
+    dma_channel_set_write_addr(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, &pio0->txf[BOOT_ROM_DATA_OUT_SM], false);
+    dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, sizeof(_zero), false);
+
+    dma_channel_set_config(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &dma_tx_status_conf, false);
+    dma_channel_set_config(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, &dma_tx_data_conf, false);
+    dma_channel_set_config(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, &dma_tx_null_conf, false);
+
+    pio_set_irq0_source_enabled(pio0, pis_interrupt0 + BOOT_ROM_BYTE_OUT_IRQ, true);
+    irq_set_exclusive_handler(PIO0_IRQ_0, boot_rom_byte_out_irq_handler);
+    irq_set_enabled(PIO0_IRQ_0, true);
+}
+
+inline static void boot_rom_data_out_start()
+{
+    pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_DATA_OUT_SM), true);
+}
+
+inline static void boot_rom_data_out_stop()
+{
+    pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_DATA_OUT_SM), false);
 }
 
 inline static void boot_rom_data_out_reset()
 {
-    pio_restart_sm_mask(pio0, (1 << BOOT_ROM_DATA_OUT_SM) | (1 << BOOT_ROM_DATA_PINDIRS_SWITCHER_SM));
+    pio_restart_sm_mask(pio0, (1 << BOOT_ROM_DATA_OUT_SM));
     pio_sm_exec(pio0, BOOT_ROM_DATA_OUT_SM, pio_encode_jmp(boot_rom_data_out_offset));
-    pio_sm_exec(pio0, BOOT_ROM_DATA_PINDIRS_SWITCHER_SM, pio_encode_jmp(boot_rom_data_pindirs_switcher_offset));
+}
+
+inline static void boot_rom_sniffers_start()
+{
+    pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_READ_SNIFFER_SM) | (1 << BOOT_ROM_WRITE_SNIFFER_SM), true);
+}
+
+inline static void boot_rom_sniffers_stop()
+{
+    pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_READ_SNIFFER_SM) | (1 << BOOT_ROM_WRITE_SNIFFER_SM), false);
 }
 
 inline static void boot_rom_sniffers_reset()
@@ -101,11 +136,38 @@ inline static void boot_rom_sniffers_reset()
     pio_sm_exec(pio0, BOOT_ROM_WRITE_SNIFFER_SM, pio_encode_jmp(boot_rom_write_sniffer_offset));
 }
 
-inline static void boot_rom_data_out_start(const volatile void *read_addr, uint32_t encoded_transfer_count)
+inline static void boot_rom_data_out_start_data_with_status_code(uint32_t status_code, const volatile void *read_addr, uint32_t encoded_transfer_count)
 {
-    pio_interrupt_set(pio0, BOOT_ROM_DATA_IN_PAUSED_IRQ); // pause sniffer
-    dma_channel_transfer_from_buffer_now(BOOT_ROM_DATA_OUT_DMA_CHAN, read_addr, encoded_transfer_count);
-    pio_interrupt_clear(pio0, BOOT_ROM_DATA_OUT_PAUSED_IRQ); // resume data out
+    pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_READ_SNIFFER_SM) | (1 << BOOT_ROM_WRITE_SNIFFER_SM), false);
+
+    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, read_addr, false);
+    dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, encoded_transfer_count, false);
+
+    _boot_rom_data_out_status_code = status_code;
+    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, true);
+
+    boot_rom_data_out_start();
     boot_rom_sniffers_reset();
 }
 
+inline static void boot_rom_data_out_start_data_without_status_code(const volatile void *read_addr, uint32_t encoded_transfer_count)
+{
+    pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_READ_SNIFFER_SM) | (1 << BOOT_ROM_WRITE_SNIFFER_SM), false);
+    dma_channel_transfer_from_buffer_now(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, read_addr, encoded_transfer_count);
+    boot_rom_data_out_start();
+    boot_rom_sniffers_reset();
+}
+
+inline static void boot_rom_data_out_start_status_code(uint32_t status_code)
+{
+    pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_READ_SNIFFER_SM) | (1 << BOOT_ROM_WRITE_SNIFFER_SM), false);
+
+    // STATUS_DMA_CHAN will chain into DATA_DMA_CHAN, since we're just responding with a status code, zero the transfer count
+    dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, 0, false);
+
+    _boot_rom_data_out_status_code = status_code;
+    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, true);
+
+    boot_rom_data_out_start();
+    boot_rom_sniffers_reset();
+}
