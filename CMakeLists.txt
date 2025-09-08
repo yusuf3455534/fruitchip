@@ -60,6 +60,8 @@ endif()
 
 target_compile_definitions(my_project
     PUBLIC
+        # dont initialize PICO_DEFAULT_LED_PIN in status_led to avoid "detaching" it from PIO
+        PICO_STATUS_LED_AVAILABLE=0
         BOOT_ROM_Q0_PIN=${BOOT_ROM_Q0_PIN}
         BOOT_ROM_CE_PIN=${BOOT_ROM_CE_PIN}
         BOOT_ROM_OE_PIN=${BOOT_ROM_OE_PIN}
