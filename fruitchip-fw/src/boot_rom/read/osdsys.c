@@ -95,10 +95,7 @@ void __time_critical_func(handle_read_find_osdsys_elf)(uint8_t r)
         case 75: p_memsz |= r << 16; break;
         case 76: p_memsz |= r << 24;
             if (p_memsz == osdsys_size)
-            {
                 read_handler = handle_read_find_hook_osdsys;
-                printf("found osdsys elf\n");
-            }
 exit:
         [[fallthrough]];
         default:
@@ -111,7 +108,7 @@ void __time_critical_func(handle_read_find_osdsys_size)(uint8_t r)
 {
     counter += 1;
 
-    //  0  1  2  3   4  5  6  7   9 10 11 12  13 14 15 16
+    //  0  1  2  3   4  5  6  7   8  9 10 11  12 13 14 15
     // ---------------------------------------------------
     // 4F 53 44 53  59 53 00 00  00 00 xx xx  yy yy yy yy | OSDSYS..........
     //                                 |      |- file size
@@ -124,19 +121,20 @@ void __time_critical_func(handle_read_find_osdsys_size)(uint8_t r)
         case 3: if (r != 0x53) { goto exit; } break;
         case 4: if (r != 0x59) { goto exit; } break;
         case 5: if (r != 0x53) { goto exit; } break;
-        case 6: if (r != 0x00) { goto exit; } break;
-        case 7: if (r != 0x00) { goto exit; } break;
-        case 8: if (r != 0x00) { goto exit; } break;
+        case 6:
+        case 7:
+        case 8:
         case 9: if (r != 0x00) { goto exit; } break;
+
         case 10: break; // extinfo size
         case 11: break;
-        case 13: osdsys_size = r; break;
-        case 14: osdsys_size |= r << 8; break;
-        case 15: osdsys_size |= r << 16; break;
-        case 16: osdsys_size |= r << 24;
+
+        case 12: osdsys_size = r; break;
+        case 13: osdsys_size |= r << 8; break;
+        case 14: osdsys_size |= r << 16; break;
+        case 15: osdsys_size |= r << 24;
             // file size in ELF header, will not match for protokernel OSDSYS
             osdsys_size -= 556;
-            printf("found osdsys size %i\n", osdsys_size);
             read_handler = handle_read_find_osdsys_elf;
             counter = 0;
             break;
