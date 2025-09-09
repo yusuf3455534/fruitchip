@@ -1,5 +1,5 @@
 [submodule "sdk"]
-	path = sdk
+	path = pico-sdk
 	url = https://github.com/raspberrypi/pico-sdk
 [submodule "ps2bbl"]
 	path = ps2bbl

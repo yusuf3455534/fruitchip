@@ -1,6 +1,0 @@
-bin/
-obj/
-*.o
-linkfile
-*.bin
-*.elf

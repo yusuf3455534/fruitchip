@@ -1,0 +1,4 @@
+#pragma once
+
+#define MODCHIP_CMD_RESULT_OK 0x56276fb7
+#define MODCHIP_CMD_RESULT_ERR 0x0b4f7d09
