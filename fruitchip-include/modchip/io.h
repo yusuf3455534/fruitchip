@@ -4,7 +4,7 @@
 
 #include <tamtypes.h>
 
-#include "usleep.h"
+#include "sleep.h"
 #include "errno.h"
 
 #define BOOT_ROM_ADDR (0x1FC00000 + 0x000000C0) // points to 0x00000000
@@ -15,7 +15,7 @@ inline static void modchip_poke_u8(u8 byte)
     // if writing "too fast", CE will stay high the entire time,
     // without WE wired up, modchip can only see a single byte,
     // force CE low by waiting for a bit
-    usleep(2);
+    sleep_us(2);
 }
 
 inline static void modchip_poke_u16(u16 v)
