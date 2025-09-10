@@ -4,57 +4,40 @@
 #include <sio.h>
 
 #include <modchip/io.h>
+#include <modchip/apps.h>
 #include "load_elf.h"
+#include "crc32.h"
 
 #define USER_MEM_START_ADDR 0x100000
 #define USER_MEM_END_ADDR 0x2000000
+#define USER_MEM_SIZE (USER_MEM_END_ADDR - USER_MEM_START_ADDR)
 
 DISABLE_PATCHED_FUNCTIONS();
 
-u32 crc32(const u8* src, u32 src_len)
+inline static void panic(const char *msg)
 {
-    u32 crc = 0xffffffff;
-
-    for (u32 i = 0; i < src_len; i++)
-    {
-        crc = crc ^ src[i];
-
-        for (u8 j = 8; j > 0; --j)
-        {
-            crc = (crc >> 1) ^ (0xEDB88320 & (-(crc & 1)));
-        }
-    }
-
-    return crc ^ 0xffffffff;
+    sio_puts(msg);
+    asm volatile("break\n");
 }
 
 void __attribute__((section(".entry"))) __start()
 {
     sio_puts("EE2: clear");
-    memset((void *)USER_MEM_START_ADDR, 0, USER_MEM_END_ADDR - USER_MEM_START_ADDR);
+    memset((void *)USER_MEM_START_ADDR, 0, USER_MEM_SIZE);
 
-    sio_puts("EE2: read size");
-    u32 size;
-    u32 r = modchip_apps_read(0, sizeof(size), 1, &size);
-    if (r != MODCHIP_CMD_RESULT_OK)
-        sio_puts("EE2: read size err");
+    u32 ee_stage2_size;
+    if (!modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, MODCHIP_APPS_SIZE_SIZE, 1, &ee_stage2_size))
+        panic("EE2: size read failed");
 
-    sio_puts("EE2: read");
-    r = modchip_apps_read(8, size, 1, (void *)EE_STAGE_3_ADDR);
-    if (r != MODCHIP_CMD_RESULT_OK)
-        sio_puts("EE2: read err");
+    if (!modchip_apps_read(MODCHIP_APPS_DATA_OFFSET, ee_stage2_size, 1, (void *)EE_STAGE_3_ADDR))
+        panic("EE2: data read failed");
 
-    sio_puts("EE2: crc");
-    u32 expected_crc;
-    r = modchip_apps_read(8 + size, sizeof(expected_crc), 1, &expected_crc);
-    if (r != MODCHIP_CMD_RESULT_OK)
-        sio_puts("EE2: crc err");
+    u32 ee_stage2_crc;
+    if (!modchip_apps_read(MODCHIP_APPS_CRC_OFFSET(ee_stage2_size), MODCHIP_APPS_CRC_SIZE, 1, &ee_stage2_crc))
+        panic("EE2: crc read failed");
 
-    u32 crc = crc32((void *)EE_STAGE_3_ADDR, size);
-    if (crc == expected_crc)
-        sio_puts("EE2: checksum ok");
-    else
-        sio_puts("EE2: checksum bad");
+    u32 crc = crc32((void *)EE_STAGE_3_ADDR, ee_stage2_size);
+    crc == ee_stage2_crc ? sio_puts("EE2: crc ok") : sio_puts("EE2: crc bad");
 
     sio_puts("EE2: init");
     _InitSys();
