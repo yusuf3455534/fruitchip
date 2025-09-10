@@ -50,13 +50,13 @@ void __time_critical_func(handle_write_read_apps_partition)(uint8_t w)
         {
             uint8_t app_idx_xor = w;
 
-            bool is_valid_read_offset = (read_offset ^ read_offset_xor) == 0xFFFFFFFF && apps_partition_entry_length(w)  > read_offset;
+            bool is_valid_read_offset = (read_offset ^ read_offset_xor) == 0xFFFFFFFF && apps_partition_entry_length(app_idx)  > read_offset;
             bool is_valid_read_size = (read_size ^ read_size_xor) == 0xFFFFFFFF;
-            bool is_valid_app_idx = (app_idx ^ app_idx_xor) == 0xFF && apps_partition_entries_count() > w;
+            bool is_valid_app_idx = (app_idx ^ app_idx_xor) == 0xFF && apps_partition_entries_count() > app_idx;
 
             if (is_valid_read_offset && is_valid_read_size && is_valid_app_idx)
             {
-                uint8_t *addr = apps_partition_entry_addr(w) + read_offset;
+                uint8_t *addr = apps_partition_entry_addr(app_idx) + read_offset;
                 boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, addr, read_size, false);
             }
             else
