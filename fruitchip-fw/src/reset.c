@@ -43,10 +43,10 @@ static void __time_critical_func(reset_pressed)(uint gpio, uint32_t event_mask)
             pio_sm_drain_tx_fifo(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
             pio_sm_drain_tx_fifo(pio0, BOOT_ROM_DATA_OUT_SM);
 
-            boot_rom_sniffers_start();
-
             read_handler = handle_read_idle;
             write_handler = handle_write_idle;
+
+            boot_rom_sniffers_start();
 
             last_reset_us = time_us_64();
         }
