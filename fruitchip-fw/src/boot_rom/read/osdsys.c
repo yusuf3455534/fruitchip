@@ -50,9 +50,8 @@ void __time_critical_func(handle_read_hook_osdsys)(uint8_t r)
             if (!disable_next_osdsys_hook)
                 boot_rom_data_out_start_data_without_status_code(LOADER_EE_STAGE_1, LOADER_EE_STAGE_1_SIZE, true);
 
-            counter = 0;
-            bytes_read = 0;
             read_handler = handle_read_find_osdsys_elf;
+            counter = 0;
             break;
 
 exit:
@@ -70,7 +69,6 @@ void __time_critical_func(handle_read_find_hook_osdsys)(uint8_t r)
     {
         // failed to find the syscall table
         read_handler = handle_read_find_osdsys_elf;
-        bytes_read = 0;
     }
     else if (r == 0x06)
     {
@@ -95,7 +93,10 @@ void __time_critical_func(handle_read_find_osdsys_elf)(uint8_t r)
         case 75: p_memsz |= r << 16; break;
         case 76: p_memsz |= r << 24;
             if (p_memsz == osdsys_size)
+            {
                 read_handler = handle_read_find_hook_osdsys;
+                bytes_read = 0;
+            }
 exit:
         [[fallthrough]];
         default:

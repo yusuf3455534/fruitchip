@@ -27,6 +27,12 @@ exit:
     }
 }
 
+void __time_critical_func(prepare_handle_write_get_ee_stage1_size)(uint8_t w)
+{
+    counter = 0;
+    write_handler = handle_write_get_ee_stage1_size;
+    write_handler(w);
+}
 
 void __time_critical_func(handle_write_get_ee_stage2_size)(uint8_t w)
 {
@@ -45,6 +51,13 @@ exit:
     }
 }
 
+void __time_critical_func(prepare_handle_write_get_ee_stage2_size)(uint8_t w)
+{
+    counter = 0;
+    write_handler = handle_write_get_ee_stage2_size;
+    write_handler(w);
+}
+
 void __time_critical_func(handle_write_get_ee_stage2)(uint8_t w)
 {
     counter++;
@@ -61,3 +74,11 @@ exit:
             counter = 0;
     }
 }
+
+void __time_critical_func(prepare_handle_write_get_ee_stage2)(uint8_t w)
+{
+    counter = 0;
+    write_handler = handle_write_get_ee_stage2;
+    write_handler(w);
+}
+

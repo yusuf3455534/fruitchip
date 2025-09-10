@@ -7,12 +7,12 @@
 #include <modchip/errno.h>
 #include <modchip/cmd.h>
 
+static uint8_t counter = 0;
+
 bool disable_next_osdsys_hook = false;
 
 void __time_critical_func(handle_write_disable_next_osdsys_hook)(uint8_t w)
 {
-    static uint8_t counter = 0;
-
     counter++;
 
     switch (counter) {
@@ -27,4 +27,12 @@ exit:
             write_handler = &handle_write_idle;
             counter = 0;
     }
+}
+
+void __time_critical_func(prepare_handle_write_disable_next_osdsys_hook)(uint8_t w)
+{
+    counter = 0;
+    disable_next_osdsys_hook = false;
+    write_handler = handle_write_disable_next_osdsys_hook;
+    write_handler(w);
 }

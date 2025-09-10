@@ -7,9 +7,10 @@
 #include <boot_rom/handler.h>
 #include "idle.h"
 
+static uint8_t counter = 0;
+
 void __time_critical_func(handle_write_read_apps_partition)(uint8_t w)
 {
-    static uint8_t counter = 0;
 
     static uint32_t read_offset = 0;
     static uint32_t read_offset_xor = 0;
@@ -69,4 +70,11 @@ exit:
             write_handler = &handle_write_idle;
             counter = 0;
     }
+}
+
+void __time_critical_func(prepare_handle_write_read_apps_partition)(uint8_t w)
+{
+    counter = 0;
+    write_handler = handle_write_read_apps_partition;
+    write_handler(w);
 }
