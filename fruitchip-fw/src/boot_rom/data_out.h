@@ -78,8 +78,9 @@ inline static void boot_rom_data_out_init()
     channel_config_set_write_increment(&dma_tx_data_conf, false);
     channel_config_set_dreq(&dma_tx_data_conf, pio_get_dreq(pio0, BOOT_ROM_DATA_OUT_SM, true));
     channel_config_set_chain_to(&dma_tx_data_conf, BOOT_ROM_DATA_OUT_CRC_DMA_CHAN);
+    channel_config_set_sniff_enable(&dma_tx_data_conf, true);
     dma_channel_set_write_addr(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, &pio0->txf[BOOT_ROM_DATA_OUT_SM], false);
-    dma_sniffer_enable(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, 0, true);
+    dma_sniffer_enable(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, 0, false);
 
     dma_channel_config dma_tx_crc_conf;
     dma_channel_claim(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN);
