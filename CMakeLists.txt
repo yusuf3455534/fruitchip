@@ -32,6 +32,16 @@ ExternalProject_Add(
 )
 
 ExternalProject_Add(
+    fruitchip-fwfs
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/fruitchip-fwfs"
+    CMAKE_ARGS
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=${CMAKE_EXPORT_COMPILE_COMMANDS}
+        -DCMAKE_TOOLCHAIN_FILE=$ENV{PS2SDK}/ps2dev_iop.cmake
+    INSTALL_COMMAND cmake -E true
+    BUILD_ALWAYS 1
+)
+
+ExternalProject_Add(
     fruitchip-fw
     SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/fruitchip-fw"
     CMAKE_ARGS
@@ -45,11 +55,14 @@ ExternalProject_Add(
 )
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
-    ExternalProject_Get_property(fruitchip-fw BINARY_DIR)
-    list(APPEND COMPILATION_DATABASES ${BINARY_DIR}/compile_commands.json)
+    macro(append_to_compilation_databases TARGET)
+        ExternalProject_Get_property(${TARGET} BINARY_DIR)
+        list(APPEND COMPILATION_DATABASES ${BINARY_DIR}/compile_commands.json)
+    endmacro()
 
-    ExternalProject_Get_property(fruitchip-loader BINARY_DIR)
-    list(APPEND COMPILATION_DATABASES ${BINARY_DIR}/compile_commands.json)
+    append_to_compilation_databases(fruitchip-fw)
+    append_to_compilation_databases(fruitchip-fwfs)
+    append_to_compilation_databases(fruitchip-loader)
 
     add_custom_target(
         merge-compilation-databases
