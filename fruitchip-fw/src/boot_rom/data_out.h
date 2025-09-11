@@ -16,6 +16,11 @@
 extern uint32_t _boot_rom_data_out_status_code;
 extern uint8_t _zero;
 
+inline static void dma_channel_set_chain_to(uint channel, uint chain_to) {
+    assert(chain_to <= NUM_DMA_CHANNELS);
+    dma_channel_hw_addr(channel)->al1_ctrl = (dma_channel_hw_addr(channel)->al1_ctrl & ~DMA_CH0_CTRL_TRIG_CHAIN_TO_BITS) | (chain_to << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
+}
+
 void boot_rom_byte_out_irq_handler();
 
 inline static void boot_rom_data_out_init()
@@ -161,16 +166,19 @@ inline static void boot_rom_data_out_start_data_with_status_code(uint32_t status
         dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN, &dma_hw->sniff_data, false);
         dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN, sizeof(dma_hw->sniff_data), false);
         dma_sniffer_set_data_accumulator(0xFFFFFFFF);
+        dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, BOOT_ROM_DATA_OUT_CRC_DMA_CHAN); // status -> data -> crc -> null
     }
     else
     {
         dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN, 0, false);
+        dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN); // status -> data -> null
     }
 
     dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, read_addr, false);
     dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, encoded_transfer_count, false);
 
     _boot_rom_data_out_status_code = status_code;
+    dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, BOOT_ROM_DATA_OUT_DATA_DMA_CHAN);
     dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, true);
 
     boot_rom_data_out_start();
@@ -184,10 +192,12 @@ inline static void boot_rom_data_out_start_data_without_status_code(const volati
         dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN, &dma_hw->sniff_data, false);
         dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN, sizeof(dma_hw->sniff_data), false);
         dma_sniffer_set_data_accumulator(0xFFFFFFFF);
+        dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, BOOT_ROM_DATA_OUT_CRC_DMA_CHAN); // data -> crc -> null
     }
     else
     {
         dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN, 0, false);
+        dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN); // data -> null
     }
 
     pio_set_sm_mask_enabled(pio0, (1 << BOOT_ROM_READ_SNIFFER_SM) | (1 << BOOT_ROM_WRITE_SNIFFER_SM), false);
@@ -206,6 +216,7 @@ inline static void boot_rom_data_out_start_status_code(uint32_t status_code)
     dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, 0, false);
 
     _boot_rom_data_out_status_code = status_code;
+    dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN); // status -> null
     dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, true);
 
     boot_rom_data_out_start();
