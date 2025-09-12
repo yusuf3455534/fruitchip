@@ -17,6 +17,8 @@ void __time_critical_func(handle_write_read_apps_partition)(uint8_t w)
     static uint32_t read_size = 0;
     static uint32_t read_size_xor = 0;
     static uint8_t app_idx = 0;
+    static uint8_t app_idx_xor = 0;
+    static bool with_crc = 0;
 
     counter += 1;
 
@@ -46,18 +48,22 @@ void __time_critical_func(handle_write_read_apps_partition)(uint8_t w)
         case 19: read_size_xor |= w << 24; break;
 
         case 20: app_idx = w; break;
-        case 21:
+        case 21: app_idx_xor = w; break;
+
+        case 22: with_crc = w; break;
+        case 23:
         {
-            uint8_t app_idx_xor = w;
+            uint8_t with_crc_xor = w;
 
             bool is_valid_read_offset = (read_offset ^ read_offset_xor) == 0xFFFFFFFF && apps_partition_entry_length(app_idx)  > read_offset;
             bool is_valid_read_size = (read_size ^ read_size_xor) == 0xFFFFFFFF;
             bool is_valid_app_idx = (app_idx ^ app_idx_xor) == 0xFF && apps_partition_entries_count() > app_idx;
+            bool is_valid_with_crc = (with_crc ^ with_crc_xor) == 0xFF;
 
-            if (is_valid_read_offset && is_valid_read_size && is_valid_app_idx)
+            if (is_valid_read_offset && is_valid_read_size && is_valid_app_idx && is_valid_with_crc)
             {
                 uint8_t *addr = apps_partition_entry_addr(app_idx) + read_offset;
-                boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, addr, read_size, false);
+                boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, addr, read_size, with_crc);
             }
             else
             {

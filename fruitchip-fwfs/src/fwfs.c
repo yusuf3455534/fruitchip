@@ -124,7 +124,7 @@ static int fwfs_open(iop_file_t *file, const char *name, int flags)
 
     u8 idx = get_idx_from_name(name);
 
-    bool ok = modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, sizeof(fd->size) + sizeof(fd->attr), idx, &fd->size);
+    bool ok = modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, sizeof(fd->size) + sizeof(fd->attr), idx, &fd->size, true);
     DPRINTF("open: result %x\n", ok);
     if (!ok)
     {
@@ -190,7 +190,7 @@ static int fwfs_read(iop_file_t *file, void *ptr, int size)
     u32 available_size = MIN((u32)size, remaining_size);
     DPRINTF("read: rem %i ava %i\n", remaining_size, available_size);
 
-    bool ok = modchip_apps_read(fd->offset, available_size, fd->idx, ptr);
+    bool ok = modchip_apps_read(fd->offset, available_size, fd->idx, ptr, true);
     DPRINTF("read: cmd: off %i size %i idx %i: ret %x\n", fd->offset, size, fd->idx, ok);
     if (!ok)
     {
@@ -222,7 +222,7 @@ static int fwfs_getstat(iop_file_t *file, const char *name, io_stat_t *stat)
     {
         fwfs_file_t file = {};
 
-        bool ok = modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, sizeof(fd->size) + sizeof(fd->attr), idx, &file.size);
+        bool ok = modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, sizeof(fd->size) + sizeof(fd->attr), idx, &file.size, true);
         DPRINTF("stat: result %x\n", ok);
         if (!ok)
         {
