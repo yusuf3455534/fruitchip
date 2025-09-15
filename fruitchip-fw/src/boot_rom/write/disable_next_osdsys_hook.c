@@ -32,7 +32,6 @@ exit:
 void __time_critical_func(prepare_handle_write_disable_next_osdsys_hook)(uint8_t w)
 {
     counter = 0;
-    disable_next_osdsys_hook = false;
     write_handler = handle_write_disable_next_osdsys_hook;
     write_handler(w);
 }

@@ -5,6 +5,7 @@
 #include <boot_rom/handler.h>
 #include <boot_rom/read/idle.h>
 #include <boot_rom/write/idle.h>
+#include "boot_rom/write/disable_next_osdsys_hook.h"
 
 static void __time_critical_func(reset_pressed)(uint gpio, uint32_t event_mask)
 {
@@ -43,6 +44,7 @@ static void __time_critical_func(reset_pressed)(uint gpio, uint32_t event_mask)
             pio_sm_drain_tx_fifo(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
             pio_sm_drain_tx_fifo(pio0, BOOT_ROM_DATA_OUT_SM);
 
+            disable_next_osdsys_hook = false;
             read_handler = handle_read_idle;
             write_handler = handle_write_idle;
 
