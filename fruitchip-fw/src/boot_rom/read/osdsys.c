@@ -20,6 +20,24 @@ void handle_read_find_osdsys_elf(uint8_t);
 
 void __time_critical_func(handle_read_hook_osdsys)(uint8_t r)
 {
+    // 06 00 03 24  0C 00 00 00  08 00 E0 03  00 00 00[00]
+    // 07 00 03 24  0C 00 00 00  08 00 E0 03  00 00 00 00
+
+    if (r != 0x00)
+    {
+        read_handler = handle_read_find_hook_osdsys;
+        return;
+    }
+
+    if (!disable_next_osdsys_hook)
+        boot_rom_data_out_start_data_without_status_code(LOADER_EE_STAGE_1, LOADER_EE_STAGE_1_SIZE, true);
+
+    read_handler = handle_read_find_osdsys_elf;
+    disable_next_osdsys_hook = false;
+}
+
+void __time_critical_func(handle_read_find_osdsys_syscall_table)(uint8_t r)
+{
     counter += 1;
 
     //     1  2  3   4  5  6  7   8  9 10 11  12 13 14 15
@@ -44,14 +62,12 @@ void __time_critical_func(handle_read_hook_osdsys)(uint8_t r)
         case 11: if (r != 0x03) { goto exit; } break;
 
         case 12:
-        case 13:
-        case 14: if (r != 0x00) { goto exit; } break;
-        case 15: if (r != 0x00) { goto exit; }
-            if (!disable_next_osdsys_hook)
-                boot_rom_data_out_start_data_without_status_code(LOADER_EE_STAGE_1, LOADER_EE_STAGE_1_SIZE, true);
-
-            disable_next_osdsys_hook = false;
-            read_handler = handle_read_find_osdsys_elf;
+        case 13: if (r != 0x00) { goto exit; } break;
+        case 14: if (r != 0x00) { goto exit; }
+            // move injection handler into it's own function,
+            // otherwise, if kept here, injection becomes unreliable
+            // (switch case getting too big?)
+            read_handler = handle_read_hook_osdsys;
             counter = 0;
             break;
 
@@ -73,7 +89,7 @@ void __time_critical_func(handle_read_find_hook_osdsys)(uint8_t r)
     }
     else if (r == 0x06)
     {
-        read_handler = handle_read_hook_osdsys;
+        read_handler = handle_read_find_osdsys_syscall_table;
     }
 }
 
