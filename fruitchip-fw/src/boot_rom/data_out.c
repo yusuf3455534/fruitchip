@@ -3,7 +3,7 @@
 #include "data_out.h"
 
 uint32_t _boot_rom_data_out_status_code;
-uint8_t _zero = 0;
+uint32_t _boot_rom_data_out_busy_code;
 
 void __time_critical_func(boot_rom_byte_out_irq_handler)()
 {

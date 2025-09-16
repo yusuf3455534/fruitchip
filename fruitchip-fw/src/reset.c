@@ -35,6 +35,8 @@ static void __time_critical_func(reset_pressed)(uint gpio, uint32_t event_mask)
             dma_channel_abort(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN);
             dma_channel_abort(BOOT_ROM_DATA_OUT_CRC_DMA_CHAN);
             dma_channel_abort(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN);
+            dma_channel_abort(BOOT_ROM_DATA_OUT_BUSY_DMA_CHAN);
+            dma_channel_abort(BOOT_ROM_DATA_OUT_BUSY_RESET_DMA_CHAN);
 
             pio_sm_clear_fifos(pio0, BOOT_ROM_READ_SNIFFER_SM);
             pio_sm_clear_fifos(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
