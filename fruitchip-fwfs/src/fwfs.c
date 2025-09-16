@@ -231,12 +231,10 @@ static int fwfs_getstat(iop_file_t *file, const char *name, io_stat_t *stat)
         }
 
         stat->size = file.size;
-        stat->mode = file.attr;
     }
     else
     {
         stat->size = fd->size;
-        stat->mode = fd->attr;
     }
 
     fs_unlock();
