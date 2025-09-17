@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // taken from https://web.archive.org/web/20241212003540/https://www.eevblog.com/forum/programming/crc32-half-bytenibble-lookup-table-algorithm/
-uint32_t crc32(uint8_t *data, uint32_t len)
+inline static uint32_t crc32(uint8_t *data, uint32_t len)
 {
     uint32_t crc = 0xFFFFFFFF;
 
