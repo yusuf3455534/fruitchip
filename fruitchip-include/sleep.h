@@ -25,7 +25,7 @@ inline static u32 cop0_cycle_count_get()
     return count;
 }
 
-void sleep_us(u32 us)
+inline static void sleep_us(u32 us)
 {
     u32 wait_cycles = us * 300;
 
@@ -41,7 +41,7 @@ void sleep_us(u32 us)
 #endif // _EE
 
 #ifdef _IOP
-void sleep_us(volatile u32 us)
+inline static void sleep_us(volatile u32 us)
 {
     for (; us > 0; us--)
         for (volatile u32 i = 16; i > 0; i--) {}
