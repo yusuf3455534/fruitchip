@@ -14,10 +14,9 @@
 #include "fwfs.h"
 #include <modchip/io.h>
 #include <modchip/apps.h>
+#include "minmax.h"
 
 #define MAX_FILES 8
-
-#define MIN(a,b) (((a)<(b))?(a):(b))
 
 typedef struct
 {
