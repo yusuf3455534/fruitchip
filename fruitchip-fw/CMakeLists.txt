@@ -33,8 +33,10 @@ add_executable(fruitchip-fw
     src/boot_rom/write/idle.c
     src/boot_rom/write/kv.c
     src/boot_rom/write/read_app.c
+    src/boot_rom/write/version.c
     src/reset.c
     src/settings.c
+    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
 )
 
 target_include_directories(fruitchip-fw
@@ -88,3 +90,12 @@ pico_enable_stdio_rtt(fruitchip-fw 1)
 pico_add_uf2_output(fruitchip-fw)
 
 set_property(TARGET fruitchip-fw APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
+
+add_custom_command(
+    OUTPUT
+        ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/_version.cpp  # always re-run before the build
+    COMMAND
+        ${CMAKE_COMMAND} -P
+        ${CMAKE_CURRENT_SOURCE_DIR}/../version.cmake
+)

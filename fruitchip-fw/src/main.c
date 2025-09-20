@@ -9,6 +9,7 @@
 #include "apps.h"
 #include "settings.h"
 #include "panic.h"
+#include "version.h"
 
 int __time_critical_func(main)()
 {
@@ -17,6 +18,9 @@ int __time_critical_func(main)()
     uint32_t hz = 240;
     set_sys_clock_khz(hz * KHZ, true);
     clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, hz * MHZ, hz * MHZ);
+
+    printf("fruitchip\n");
+    printf("rev: %s\n", GIT_REV);
 
     boot_rom_data_out_init();
 
