@@ -28,12 +28,17 @@ int __time_critical_func(main)()
     // status led claims unused SM for WS2812, call it after claiming SMs for data out
     status_led_init();
 
-    if (!apps_partition_detect())
-        panic_with_led(RGB_ERR_APPS, "Apps partition header not found");
-
     settings_init();
 
-    colored_status_led_set_on_with_color(RGB_OK);
+    if (!apps_partition_detect())
+    {
+        printf("apps partition header not found\n");
+        colored_status_led_set_on_with_color(RGB_ERR_APPS);
+    }
+    else
+    {
+        colored_status_led_set_on_with_color(RGB_OK);
+    }
 
     reset_init_irq();
 
