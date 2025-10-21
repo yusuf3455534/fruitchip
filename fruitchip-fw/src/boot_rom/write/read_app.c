@@ -54,8 +54,9 @@ void __time_critical_func(handle_write_read_apps_partition)(uint8_t w)
             bool is_valid_read_size = (read_size ^ read_size_xor) == 0xFFFFFFFF;
             bool is_valid_app_idx = (app_idx ^ app_idx_xor) == 0xFF && apps_partition_entries_count() > app_idx;
             bool is_valid_with_crc = (with_crc ^ with_crc_xor) == 0xFF;
+            bool is_valid = apps_partition_detect() && is_valid_read_offset && is_valid_read_size && is_valid_app_idx && is_valid_with_crc;
 
-            if (is_valid_read_offset && is_valid_read_size && is_valid_app_idx && is_valid_with_crc)
+            if (is_valid)
             {
                 uint8_t *addr = apps_partition_entry_addr(app_idx) + read_offset;
                 boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, addr, read_size, with_crc);
