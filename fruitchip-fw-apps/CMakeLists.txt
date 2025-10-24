@@ -26,6 +26,8 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+math(EXPR APPS_PARTITION_ADDR "0x10000000 + ${APPS_PARTITION_OFFSET}" OUTPUT_FORMAT HEXADECIMAL)
+
 pico_init_picotool()
 
 add_custom_command(

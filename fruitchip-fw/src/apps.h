@@ -11,6 +11,8 @@
 #define APPS_PARTITION_MAGIC2 0x4FB80AB4
 #define APPS_PARTITION_VERSION 1
 
+#define APPS_PARTITION_ADDR (XIP_BASE + APPS_PARTITION_OFFSET)
+
 inline static bool apps_partition_detect()
 {
     bool is_magic1_valid = memcmp((void *)APPS_PARTITION_ADDR, APPS_PARTITION_MAGIC1, sizeof(uint32_t)) == 0;
