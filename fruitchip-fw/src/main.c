@@ -2,6 +2,7 @@
 
 #include <hardware/clocks.h>
 #include <pico/stdio_rtt.h>
+#include <pico/stdio_uart.h>
 #include <pico/status_led.h>
 
 #include <boot_rom/handler.h>
@@ -13,11 +14,11 @@
 
 int __time_critical_func(main)()
 {
-    stdio_init_all();
-
     uint32_t hz = 240;
     set_sys_clock_khz(hz * KHZ, true);
     clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, hz * MHZ, hz * MHZ);
+
+    stdio_init_all();
 
     printf("fruitchip\n");
     printf("rev: %s\n", GIT_REV);

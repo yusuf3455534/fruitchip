@@ -82,6 +82,7 @@ configure_file(
 target_link_libraries(fruitchip-fw
     pico_stdlib
     pico_stdio_rtt
+    pico_stdio_uart
     pico_multicore
     pico_status_led
     hardware_pio
@@ -89,8 +90,14 @@ target_link_libraries(fruitchip-fw
     hardware_flash
 )
 
-pico_enable_stdio_uart(fruitchip-fw 0)
+target_compile_definitions(fruitchip-fw
+    PUBLIC
+        PICO_DEFAULT_UART_TX_PIN=${UART_TX_PIN}
+        PICO_DEFAULT_UART_RX_PIN=${UART_RX_PIN}
+)
+
 pico_enable_stdio_rtt(fruitchip-fw 1)
+pico_enable_stdio_uart(fruitchip-fw 1)
 
 pico_add_uf2_output(fruitchip-fw)
 
