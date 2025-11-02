@@ -119,6 +119,7 @@ inline static void boot_rom_data_out_init()
     channel_config_set_read_increment(&dma_tx_null_conf, false);
     channel_config_set_write_increment(&dma_tx_null_conf, false);
     channel_config_set_dreq(&dma_tx_null_conf, pio_get_dreq(pio0, BOOT_ROM_DATA_OUT_SM, true));
+    channel_config_set_chain_to(&dma_tx_null_conf, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN); // no chain
     dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, &_zero, false);
     dma_channel_set_write_addr(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, &pio0->txf[BOOT_ROM_DATA_OUT_SM], false);
     dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, sizeof(_zero), false);
