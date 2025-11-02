@@ -12,7 +12,7 @@
 
 void __time_critical_func(handle_write_cmd_group0)(uint8_t w)
 {
-    cmd_byte_counter++;
+    cmd_byte_counter++; // 2
 
     // assert that cmd belongs to group0 (2nd byte), and extract 3rd byte to match on
     #define assert_and_case(v) static_assert((uint8_t)(v >> 8) == MODCHIP_CMD_GROUP0); case ((uint8_t)(v >> 16))
@@ -27,7 +27,13 @@ void __time_critical_func(handle_write_cmd_group0)(uint8_t w)
         assert_and_case(MODCHIP_CMD_KV_GET): write_handler = handle_write_kv_get; break;
         assert_and_case(MODCHIP_CMD_KV_SET): write_handler = handle_write_kv_set; break;
         assert_and_case(MODCHIP_CMD_GIT_REV): write_handler = handle_write_git_rev; break;
-        assert_and_case(MODCHIP_CMD_GET_FLASH_SIZE): write_handler = handle_write_get_flash_size; break;
+        assert_and_case(MODCHIP_CMD_GET_PARTITION_SIZE): write_handler = handle_write_get_partition_size; break;
+        assert_and_case(MODCHIP_CMD_GET_FLASH_SECTOR_SIZE): write_handler = handle_write_get_flash_sector_size; break;
+        assert_and_case(MODCHIP_CMD_WRITE_LOCK): write_handler = handle_write_write_lock; break;
+        assert_and_case(MODCHIP_CMD_ERASE_FLASH_SECTOR): write_handler = handle_write_erase_flash_sector; break;
+        assert_and_case(MODCHIP_CMD_WRITE_FLASH_SECTOR): write_handler = handle_write_write_flash_sector; break;
+        assert_and_case(MODCHIP_CMD_REBOOT): write_handler = handle_write_reboot; break;
+        assert_and_case(MODCHIP_CMD_PING): write_handler = handle_write_ping; break;
         default: write_handler = handle_write_idle; break;
     }
 
@@ -36,7 +42,7 @@ void __time_critical_func(handle_write_cmd_group0)(uint8_t w)
 
 void __time_critical_func(handle_write_cmd)(uint8_t w)
 {
-    cmd_byte_counter++;
+    cmd_byte_counter++; // 1
 
     switch (w)
     {
