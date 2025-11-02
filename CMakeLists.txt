@@ -54,12 +54,23 @@ ExternalProject_Add(
     CONFIGURE_HANDLED_BY_BUILD 1
 )
 
+ExternalProject_Add(
+    fruitchip-fw-bootloader
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/fruitchip-fw-bootloader"
+    CMAKE_ARGS
+        -DBOARD=${BOARD}
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=${CMAKE_EXPORT_COMPILE_COMMANDS}
+    INSTALL_COMMAND cmake -E true
+    BUILD_ALWAYS 1
+)
+
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
     macro(append_to_compilation_databases TARGET)
         ExternalProject_Get_property(${TARGET} BINARY_DIR)
         list(APPEND COMPILATION_DATABASES ${BINARY_DIR}/compile_commands.json)
     endmacro()
 
+    append_to_compilation_databases(fruitchip-fw-bootloader)
     append_to_compilation_databases(fruitchip-fw)
     append_to_compilation_databases(fruitchip-fwfs)
     append_to_compilation_databases(fruitchip-loader)

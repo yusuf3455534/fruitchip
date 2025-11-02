@@ -111,3 +111,8 @@ add_custom_command(
         ${CMAKE_COMMAND} -P
         ${CMAKE_CURRENT_SOURCE_DIR}/../version.cmake
 )
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/pico_flash_region.template.ld
+    ${CMAKE_BINARY_DIR}/pico_flash_region.ld
+)

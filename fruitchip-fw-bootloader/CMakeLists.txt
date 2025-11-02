@@ -1,0 +1,68 @@
+cmake_minimum_required(VERSION 3.21)
+
+set(PICO_COMPILER "pico_arm_cortex_m0plus_clang")
+include(../pico-sdk/pico_sdk_init.cmake)
+
+project(fruitchip-fw-bootloader)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+pico_sdk_init()
+
+include(../fruitchip-fw-board/board_configuration.cmake)
+
+add_executable(fruitchip-fw-bootloader
+    src/main.c
+    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+)
+
+target_link_libraries(fruitchip-fw-bootloader
+    pico_stdlib
+    pico_stdio_uart
+    pico_stdio_rtt
+    pico_status_led
+    hardware_dma
+    hardware_flash
+)
+
+target_include_directories(fruitchip-fw-bootloader
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/../fruitchip-include
+)
+
+target_compile_definitions(fruitchip-fw-bootloader
+    PUBLIC
+        PICO_DEFAULT_WS2812_PIN=${PICO_DEFAULT_WS2812_PIN}
+        FW_PARTITION_OFFSET=${FW_PARTITION_OFFSET}
+        FW_PARTITION_SIZE_BYTES=${FW_PARTITION_SIZE_BYTES}
+        UPDATE_PARTITION_OFFSET=${UPDATE_PARTITION_OFFSET}
+)
+
+target_compile_definitions(fruitchip-fw-bootloader
+    PUBLIC
+        PICO_DEFAULT_UART_TX_PIN=${UART_TX_PIN}
+        PICO_DEFAULT_UART_RX_PIN=${UART_RX_PIN}
+)
+
+pico_enable_stdio_rtt(fruitchip-fw-bootloader 1)
+pico_enable_stdio_uart(fruitchip-fw-bootloader 1)
+
+pico_add_uf2_output(fruitchip-fw-bootloader)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/pico_flash_region.template.ld
+    ${CMAKE_BINARY_DIR}/pico_flash_region.ld
+)
+
+add_custom_command(
+    OUTPUT
+        ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/_version.cpp  # always re-run before the build
+    COMMAND
+        ${CMAKE_COMMAND} -P
+        ${CMAKE_CURRENT_SOURCE_DIR}/../version.cmake
+)
+
+set_property(TARGET fruitchip-fw-bootloader APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
