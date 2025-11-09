@@ -134,7 +134,7 @@ static int fwfs_open(iop_file_t *file, const char *name, int flags)
     fd->idx = get_idx_from_name(name);
     fd->mode = get_mode_from_name(name);
 
-    if (fd->mode == FWFS_MODE_DATA)
+    if (fd->mode == FWFS_MODE_DATA_CHAR)
     {
         bool ok = modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, sizeof(fd->size) + sizeof(fd->attr), fd->idx, &fd->size, true);
         DPRINTF("open: result %x\n", ok);
@@ -146,7 +146,7 @@ static int fwfs_open(iop_file_t *file, const char *name, int flags)
 
         fd->offset = MODCHIP_APPS_DATA_OFFSET;
     }
-    else if (fd->mode == FWFS_MODE_ATTR)
+    else if (fd->mode == FWFS_MODE_ATTR_CHAR)
     {
         bool ok = modchip_apps_read(MODCHIP_APPS_ATTR_SIZE, sizeof(fd->attr), fd->idx, &fd->attr, true);
         if (!ok)
