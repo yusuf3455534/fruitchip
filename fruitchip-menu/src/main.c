@@ -89,6 +89,9 @@ int main()
     // enable loading IOP modules from EE RAM
     sbv_patch_enable_lmb();
 
+    // enabling FWFS loading for elf-loader
+    sbv_patch_disable_prefix_check();
+
     int mod_res = 0;
 #ifndef NDEBUG
     ret = SifExecModuleBuffer(PPCTTY_IRX, PPCTTY_IRX_SIZE, 0, NULL, &ret);
