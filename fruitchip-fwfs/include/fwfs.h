@@ -6,7 +6,7 @@
 
 #define MODNAME "fwfs"
 
-#ifdef DEBUG
+#ifndef NDEBUG
 #define DPRINTF(fmt, x...) printf(MODNAME ": " fmt, ##x)
 #else
 #define DPRINTF(x...)
