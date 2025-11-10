@@ -17,3 +17,9 @@ const uint8_t __in_flash("ee_stage2") LOADER_EE_STAGE_2[] = {
 };
 
 const uint32_t LOADER_EE_STAGE_2_SIZE = sizeof(LOADER_EE_STAGE_2);
+
+const uint8_t __in_flash("ee_stage3") LOADER_EE_STAGE_3[] = {
+    #embed "${MENU_INSTALL_PREFIX}/fruitchip-menu-packed.elf"
+};
+
+const uint32_t LOADER_EE_STAGE_3_SIZE = sizeof(LOADER_EE_STAGE_3);

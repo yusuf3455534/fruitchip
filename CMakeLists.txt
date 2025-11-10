@@ -63,6 +63,7 @@ ExternalProject_Add(
         -DBOARD=${BOARD}
         -DCMAKE_EXPORT_COMPILE_COMMANDS=${CMAKE_EXPORT_COMPILE_COMMANDS}
         -DLOADER_INSTALL_PREFIX=${LOADER_INSTALL_PREFIX}
+        -DMENU_INSTALL_PREFIX=${MENU_INSTALL_PREFIX}
     INSTALL_COMMAND cmake -E true
     DEPENDS fruitchip-loader
     # helps to avoid reconfiguring the project due to rebuilding loader, even if there were no changes
