@@ -148,3 +148,8 @@ add_custom_command(
         $<TARGET_FILE_BASE_NAME:fruitchip-menu>-packed.elf
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+install(
+    FILES $<TARGET_FILE_BASE_NAME:fruitchip-menu>-packed.elf
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
