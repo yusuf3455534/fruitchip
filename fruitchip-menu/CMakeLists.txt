@@ -138,3 +138,13 @@ add_custom_command(
         ${CMAKE_COMMAND} -P
         ${CMAKE_CURRENT_SOURCE_DIR}/../version.cmake
 )
+
+add_custom_command(
+    TARGET fruitchip-menu
+    POST_BUILD
+    COMMAND
+        ps2-packer
+        $<TARGET_FILE:fruitchip-menu>
+        $<TARGET_FILE_BASE_NAME:fruitchip-menu>-packed.elf
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
