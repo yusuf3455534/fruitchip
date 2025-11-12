@@ -78,6 +78,7 @@ inline static void boot_rom_data_out_init()
     channel_config_set_read_increment(&dma_tx_status_conf, true);
     channel_config_set_write_increment(&dma_tx_status_conf, false);
     channel_config_set_dreq(&dma_tx_status_conf, pio_get_dreq(pio0, BOOT_ROM_DATA_OUT_SM, true));
+    channel_config_set_ring(&dma_tx_status_conf, false, 2); // log(2) = 4
     dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, false);
     dma_channel_set_write_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &pio0->txf[BOOT_ROM_DATA_OUT_SM], false);
     dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, sizeof(_boot_rom_data_out_status_code), false);
@@ -215,8 +216,7 @@ inline static void boot_rom_data_out_start_data_with_status_code(uint32_t status
     dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, encoded_transfer_count, false);
 
     _boot_rom_data_out_status_code = status_code;
-    dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, false);
-    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, true);
+    dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, true);
 
     boot_rom_data_out_start();
     boot_rom_sniffers_reset();
@@ -252,8 +252,7 @@ inline static void boot_rom_data_out_start_status_code(uint32_t status_code)
     dma_channel_set_transfer_count(BOOT_ROM_DATA_OUT_DATA_DMA_CHAN, 0, false);
 
     _boot_rom_data_out_status_code = status_code;
-    dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, false); // status -> null
-    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, true);
+    dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, true); // status -> null
 
     boot_rom_data_out_start();
     boot_rom_sniffers_reset();
@@ -272,7 +271,6 @@ inline static void boot_rom_data_out_start_busy_code()
 inline static void boot_rom_data_out_stop_busy_code(uint32_t status_code)
 {
     _boot_rom_data_out_status_code = status_code;
-    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, &_boot_rom_data_out_status_code, false);
 
     // busy and busy reset are running in ping-pong, chain busy reset -> status -> null to end data out
     dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_STATUS_DMA_CHAN, BOOT_ROM_DATA_OUT_NULL_DMA_CHAN, false);
