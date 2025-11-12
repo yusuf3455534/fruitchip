@@ -1,10 +1,12 @@
-#ifndef __LOADELF_H__
-#define __LOADELF_H__
+#pragma once
 
 #include <string.h>
 
 #include <kernel.h>
 #include <sio.h>
+
+#include "modchip/apps.h"
+#include "sio_ext.h"
 
 #define ELF_MAGIC 0x464c457f
 #define ELF_PT_LOAD 1
@@ -39,41 +41,70 @@ typedef struct
     u32 align;
 } elf_pheader_t;
 
-inline static void ExecPS2FromMemory(u8 *elf, int argc, char *argv[])
+inline static bool ExecPS2FromModchipApps(u8 app_idx, int argc, char *argv[])
 {
-    elf_header_t *eh;
-    elf_pheader_t *eph;
-    void *pdata;
+    elf_header_t eh;
+    elf_pheader_t eph;
     int i;
 
-    eh = (elf_header_t *)elf;
-    if (_lw((u32)&eh->ident) != ELF_MAGIC)
+    bool failed = !modchip_apps_read(
+        MODCHIP_APPS_DATA_OFFSET,
+        sizeof(eh),
+        app_idx,
+        &eh,
+        true
+    );
+    if (failed)
     {
-        sio_puts("not an elf");
-        asm volatile("break\n");
+        sio_puts("failed to read elf header");
+        return false;
     }
 
-    eph = (elf_pheader_t *)(elf + eh->phoff);
+    if (_lw((u32)&eh.ident) != ELF_MAGIC)
+    {
+        sio_puts("not an elf");
+        return false;
+    }
 
     // Scan through the ELF's program headers and copy them into RAM,
     // then zero out any non-loaded regions.
-    for (i = 0; i < eh->phnum; i++)
+    for (i = 0; i < eh.phnum; i++)
     {
-        if (eph[i].type != ELF_PT_LOAD)
+        if (!modchip_apps_read(
+                MODCHIP_APPS_DATA_OFFSET + eh.phoff + (sizeof(eph) * i),
+                sizeof(eph),
+                app_idx,
+                &eph,
+                true
+            ))
+        {
+            sio_puts("failed to read elf section header");
+            return false;
+        }
+
+        if (eph.type != ELF_PT_LOAD)
             continue;
 
-        pdata = (void *)(elf + eph[i].offset);
-        memcpy(eph[i].vaddr, pdata, eph[i].filesz);
+        if (!modchip_apps_read(
+                MODCHIP_APPS_DATA_OFFSET + eph.offset,
+                eph.filesz,
+                app_idx,
+                eph.vaddr,
+                true
+            ))
+        {
+            sio_puts("failed to read elf section");
+            return false;
+        }
 
-        if (eph[i].memsz > eph[i].filesz)
-            memset(eph[i].vaddr + eph[i].filesz, 0,
-                   eph[i].memsz - eph[i].filesz);
+        if (eph.memsz > eph.filesz)
+            memset(eph.vaddr + eph.filesz, 0, eph.memsz - eph.filesz);
     }
 
     FlushCache(0); // flush data cache
     FlushCache(2); // invalidate instruction cache
 
-    ExecPS2((void *)eh->entry, NULL, argc, argv);
-}
+    ExecPS2((void *)eh.entry, NULL, argc, argv);
 
-#endif // __LOADELF_H__
+    return true;
+}

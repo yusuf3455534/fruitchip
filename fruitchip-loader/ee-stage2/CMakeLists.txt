@@ -6,10 +6,6 @@ if(NOT DEFINED EE_STAGE_2_ADDR)
     message(FATAL_ERROR "EE_STAGE_2_ADDR is not set")
 endif()
 
-if(NOT DEFINED EE_STAGE_3_ADDR)
-    message(FATAL_ERROR "EE_STAGE_3_ADDR is not set")
-endif()
-
 add_executable(fruitchip-loader-ee-stage2
     src/main.c
 )
@@ -18,11 +14,6 @@ target_include_directories(fruitchip-loader-ee-stage2
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../fruitchip-include
-)
-
-target_compile_definitions(fruitchip-loader-ee-stage2
-    PUBLIC
-        EE_STAGE_3_ADDR=${EE_STAGE_3_ADDR}
 )
 
 target_compile_options(fruitchip-loader-ee-stage2
