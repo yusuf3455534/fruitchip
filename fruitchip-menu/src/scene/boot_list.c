@@ -206,6 +206,12 @@ void scene_switch_to_boot_list(struct state *state)
     };
     superscene_push_scene(&scene);
 
+#ifndef NDEBUG
+    printf("autoboot %i\n", state->autoboot);
+    printf("autoboot_item_idx %i\n", state->autoboot_item_idx);
+    printf("autoboot_delay_sec %i\n", state->autoboot_delay_sec);
+#endif
+
     if (state->autoboot)
     {
         state->autoboot_countdown = true;
