@@ -16,6 +16,7 @@
 
 void apps_list_populate(struct state *state)
 {
+    state->boot_list.hilite_idx = BOOT_ITEM_OSDSYS;
     state->boot_list.start_item_idx = 0;
     state->boot_list.max_items = MAX_LIST_ITEMS_ON_SCREEN;
 
@@ -47,7 +48,9 @@ void apps_list_populate(struct state *state)
     }
 
     int ret = modchip_settings_get(MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX, &state->autoboot_item_idx);
-    if (!ret || state->autoboot_item_idx >= state->boot_list.items_count)
-        state->boot_list.hilite_idx = BOOT_ITEM_OSDSYS;
-    printf("MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX %u\n", state->boot_list.hilite_idx);
+#ifndef NDEBUG
+    printf("MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX %u ret %i\n", state->autoboot_item_idx, ret);
+#endif
+    if (ret && state->autoboot_item_idx < state->boot_list.items_count)
+        state->boot_list.hilite_idx = state->autoboot_item_idx;
 }
