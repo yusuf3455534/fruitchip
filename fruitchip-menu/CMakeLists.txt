@@ -8,6 +8,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+set(IS_RELEASE_BUILD CMAKE_BUILD_TYPE MATCHES "^Release")
+
 set(CMAKE_EXECUTABLE_SUFFIX ".elf")
 
 add_executable(fruitchip-menu
@@ -52,8 +54,13 @@ target_link_libraries(fruitchip-menu
     z
     tiff
     pad
-    elf-loader
 )
+
+if (${IS_RELEASE_BUILD})
+    target_link_libraries(fruitchip-menu elf-loader-nocolour)
+else()
+    target_link_libraries(fruitchip-menu elf-loader)
+endif()
 
 target_compile_options(fruitchip-menu
     PUBLIC
