@@ -206,8 +206,6 @@ void scene_switch_to_boot_list(struct state *state)
     };
     superscene_push_scene(&scene);
 
-    state->autoboot = true;
-
     if (state->autoboot)
     {
         state->autoboot_countdown = true;
