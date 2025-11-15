@@ -18,6 +18,7 @@
 #define MODCHIP_APPS_CRC_SIZE sizeof(u32)
 
 #define MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK (1 << 0)
+#define MODCHIP_APPS_ATTR_OSDSYS (1 << 1)
 
 inline static s32 modchip_apps_read(u32 offset, u32 size, u8 app_idx, void *dst, bool with_crc)
 {

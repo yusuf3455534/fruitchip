@@ -4,3 +4,6 @@
 [submodule "fruitchip-fw-apps/ps2bbl"]
 	path = fruitchip-fw-apps/ps2bbl
 	url = https://github.com/israpps/PlayStation2-Basic-BootLoader.git
+[submodule "fruitchip-fw-apps/osdmenu"]
+	path = fruitchip-fw-apps/osdmenu
+	url = https://github.com/pcm720/OSDMenu.git

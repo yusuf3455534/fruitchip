@@ -14,6 +14,7 @@ add_custom_target(
     SOURCES
         ${CMAKE_CURRENT_BINARY_DIR}/ps2bbl_mx4sio.elf
         ${CMAKE_CURRENT_BINARY_DIR}/ps2bbl_mmce.elf
+        ${CMAKE_CURRENT_BINARY_DIR}/osdmenu.elf
         ${CMAKE_CURRENT_BINARY_DIR}/apps.bin
         apps/_always_rerun
 )
@@ -36,11 +37,20 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT
+        ${CMAKE_CURRENT_BINARY_DIR}/osdmenu.elf
+    COMMAND make -C patcher clean patcher.elf
+    COMMAND cmake -E copy patcher/patcher.elf ${CMAKE_CURRENT_BINARY_DIR}/osdmenu.elf
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/osdmenu
+)
+
+add_custom_command(
+    OUTPUT
         ${CMAKE_CURRENT_BINARY_DIR}/apps.bin
         apps/_always_rerun
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/ps2bbl_mx4sio.elf
         ${CMAKE_CURRENT_BINARY_DIR}/ps2bbl_mmce.elf
+        ${CMAKE_CURRENT_BINARY_DIR}/osdmenu.elf
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/build_apps_partition.py ${CMAKE_CURRENT_BINARY_DIR}/apps.bin
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
