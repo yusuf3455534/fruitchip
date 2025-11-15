@@ -29,6 +29,10 @@ static u32 app_read_attributes(u8 app_idx)
 
 void apps_list_populate(struct state *state)
 {
+    free(state->apps_attr);
+
+    u8 apps_count = 1; // OSDSYS
+
     state->boot_list.hilite_idx = BOOT_ITEM_OSDSYS;
     state->boot_list.start_item_idx = 0;
     state->boot_list.max_items = MAX_LIST_ITEMS_ON_SCREEN;
@@ -50,23 +54,25 @@ void apps_list_populate(struct state *state)
         close(fd);
 
         u8 *ptr = apps_index;
-        u8 apps_count = *ptr++;
+        apps_count += *ptr++;
+        state->apps_attr = malloc(sizeof(*state->apps_attr) * apps_count);
 
-        free(state->apps_attr);
-        state->apps_attr = malloc(sizeof(*state->apps_attr) * (apps_count + 1));
-        state->apps_attr[BOOT_ITEM_OSDSYS] = MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK | MODCHIP_APPS_ATTR_OSDSYS;
-
-        for (u8 idx = 0; idx < apps_count; idx++)
+        for (u8 app_idx = 1; app_idx < apps_count; app_idx++)
         {
             u8 name_len = *ptr++;
             list_item.left_text = wstring_new_copied_str((char *)ptr, name_len);
             ptr += name_len;
             list_push_item(&state->boot_list, &list_item);
 
-            u8 app_idx = idx + 1;
             state->apps_attr[app_idx] = app_read_attributes(app_idx);
         }
     }
+    else
+    {
+        state->apps_attr = malloc(sizeof(*state->apps_attr) * apps_count);
+    }
+
+    state->apps_attr[BOOT_ITEM_OSDSYS] = MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK | MODCHIP_APPS_ATTR_OSDSYS;
 
     int ret = modchip_settings_get(MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX, &state->autoboot_item_idx);
 #ifndef NDEBUG
