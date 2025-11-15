@@ -33,8 +33,10 @@ inline static s32 modchip_apps_read(u32 offset, u32 size, u8 app_idx, void *dst,
     modchip_poke_u8(with_crc ^ 0xFF);
 
     int r = modchip_peek_u32();
-    if (r != MODCHIP_CMD_RESULT_OK)
-        return -EPROTO;
+    if (r == BOOT_ROM_ADDR_VALUE)
+        return -ENODEV;
+    else if (r != MODCHIP_CMD_RESULT_OK)
+        return -EINVAL;
 
     for (uiptr i = 0; i < size - (size % 4); i += 4)
         *(u32 *)(dst + i) = modchip_peek_u32();

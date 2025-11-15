@@ -7,7 +7,8 @@
 #include "sleep.h"
 #include "errno.h"
 
-#define BOOT_ROM_ADDR (0x1FC00000 + 0x000000C0) // points to 0x00000000
+#define BOOT_ROM_ADDR (0x1FC00000 + 0x000000C0)
+#define BOOT_ROM_ADDR_VALUE 0x00000000 // value BOOT_ROM_ADDR points to
 
 inline static void modchip_poke_u8(u8 byte)
 {
