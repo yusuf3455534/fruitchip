@@ -52,37 +52,37 @@ void __time_critical_func(handle_write_read_apps_partition)(uint8_t w)
     {
         case 3: if (w != GET_BYTE(MODCHIP_CMD_READ_APP, 3)) { goto exit; } break;
 
-        case 4: read_offset = w; break;
-        case 5: read_offset |= w << 8; break;
-        case 6: read_offset |= w << 16; break;
-        case 7: read_offset |= w << 24;
+        case 4: app_idx = w; break;
+        case 5: app_idx_xor = w;
+            is_valid_app_idx = (app_idx ^ app_idx_xor) == 0xFF && apps_partition_entries_count() > app_idx;
+            break;
+
+        case 6: read_offset = w; break;
+        case 7: read_offset |= w << 8; break;
+        case 8: read_offset |= w << 16; break;
+        case 9: read_offset |= w << 24;
             is_valid_apps_partition = apps_partition_detect();
             break;
 
-        case 8: read_offset_xor = w; break;
-        case 9: read_offset_xor |= w << 8; break;
-        case 10: read_offset_xor |= w << 16; break;
-        case 11: read_offset_xor |= w << 24;
+        case 10: read_offset_xor = w; break;
+        case 11: read_offset_xor |= w << 8; break;
+        case 12: read_offset_xor |= w << 16; break;
+        case 13: read_offset_xor |= w << 24;
             is_valid_read_offset = (read_offset ^ read_offset_xor) == 0xFFFFFFFF && apps_partition_entry_length(app_idx)  > read_offset;
             break;
 
-        case 12: read_size = w; break;
-        case 13: read_size |= w << 8; break;
-        case 14: read_size |= w << 16; break;
-        case 15: read_size |= w << 24;
-            break;
-
-        case 16: read_size_xor = w; break;
-        case 17: read_size_xor |= w << 8; break;
-        case 18: read_size_xor |= w << 16; break;
-        case 19: read_size_xor |= w << 24;
-            is_valid_read_size = (read_size ^ read_size_xor) == 0xFFFFFFFF;
-            break;
-
-        case 20: app_idx = w; break;
-        case 21: app_idx_xor = w;
-            is_valid_app_idx = (app_idx ^ app_idx_xor) == 0xFF && apps_partition_entries_count() > app_idx;
+        case 14: read_size = w; break;
+        case 15: read_size |= w << 8; break;
+        case 16: read_size |= w << 16; break;
+        case 17: read_size |= w << 24;
             read_addr = apps_partition_entry_addr(app_idx) + read_offset;
+            break;
+
+        case 18: read_size_xor = w; break;
+        case 19: read_size_xor |= w << 8; break;
+        case 20: read_size_xor |= w << 16; break;
+        case 21: read_size_xor |= w << 24;
+            is_valid_read_size = (read_size ^ read_size_xor) == 0xFFFFFFFF;
             break;
 
         case 22:

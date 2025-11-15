@@ -23,12 +23,12 @@
 inline static s32 modchip_apps_read(u32 offset, u32 size, u8 app_idx, void *dst, bool with_crc)
 {
     modchip_poke_u32(MODCHIP_CMD_READ_APP);
+    modchip_poke_u8(app_idx);
+    modchip_poke_u8(app_idx ^ 0xFF);
     modchip_poke_u32(offset);
     modchip_poke_u32(offset ^ 0xFFFFFFFF);
     modchip_poke_u32(size);
     modchip_poke_u32(size ^ 0xFFFFFFFF);
-    modchip_poke_u8(app_idx);
-    modchip_poke_u8(app_idx ^ 0xFF);
     modchip_poke_u8(with_crc);
     modchip_poke_u8(with_crc ^ 0xFF);
 
