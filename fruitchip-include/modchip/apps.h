@@ -36,7 +36,7 @@ inline static s32 modchip_apps_read(u32 offset, u32 size, u8 app_idx, void *dst,
     if (r != MODCHIP_CMD_RESULT_OK)
         return -EPROTO;
 
-    for (uiptr i = 0; i < size; i += 4)
+    for (uiptr i = 0; i < size - (size % 4); i += 4)
         *(u32 *)(dst + i) = modchip_peek_u32();
 
     for (uiptr i = size - (size % 4); i < size; i += 1)
