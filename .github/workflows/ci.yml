@@ -1,0 +1,76 @@
+# act --artifact-server-path $(pwd)/.artifacts
+
+name: CI
+
+on:
+  push:
+    branches:
+      - '*'
+    paths-ignore:
+      - '**.md'
+      - '**.gitkeep'
+      - '**.gitignore'
+
+jobs:
+  build-ps2:
+    runs-on: ubuntu-latest
+    container: ps2dev/ps2dev:latest
+    steps:
+      - run: |
+          apk add build-base cmake ccache git linux-headers python3 wine jq
+
+      - if: ${{ env.ACT }} # https://github.com/nektos/act/issues/973
+        run: |
+          apk add nodejs
+
+      - uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
+
+      - run: |
+          cmake -B build build -DBUILD_PS2=1 -DBUILD_ARM=0
+          cmake --build build
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: build-ps2
+          path: |
+            build/fruitchip-fw-apps-prefix/src/fruitchip-fw-apps-build/*.uf2
+            build/fwfs/*
+            build/loader/*
+            build/menu/*
+
+  build-arm:
+    needs: build-ps2
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          sudo apt update && sudo apt install -y build-essential make cmake
+
+      - uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
+
+      - run: |
+          wget "https://github.com/arm/arm-toolchain/releases/download/release-20.1.0-ATfE/ATfE-20.1.0-Linux-x86_64.tar.xz"
+          tar --extract --directory=/opt --file ATfE-20.1.0-Linux-x86_64.tar.xz
+
+      - run: |
+          export PATH=/opt/ATfE-20.1.0-Linux-x86_64/bin:$PATH
+          cmake -B build build -DBUILD_PS2=0 -DBUILD_ARM=1
+
+      - uses: actions/download-artifact@v6
+        with:
+          name: build-ps2
+          path: build
+
+      - run: |
+          export PATH=/opt/ATfE-20.1.0-Linux-x86_64/bin:$PATH
+          cmake --build build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-arm
+          path: |
+            build/fruitchip-fw-bootloader-prefix/src/fruitchip-fw-bootloader-build/*.uf2
+            build/fruitchip-fw-prefix/src/fruitchip-fw-build/*.uf2
