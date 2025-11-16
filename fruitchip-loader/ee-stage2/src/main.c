@@ -40,6 +40,6 @@ void __attribute__((section(".entry"))) __start()
 
     print_debug("EE2: exec");
     static char *argv[1] = { "" };
-    if (!ExecPS2FromModchipApps(1, 1, argv))
+    if (!ExecPS2FromModchipStage3(1, argv))
         panic("EE2: exec fail");
 }
