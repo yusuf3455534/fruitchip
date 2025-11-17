@@ -160,7 +160,10 @@ static void handle_autoboot_countdown(struct state *state)
         float y = ITEMS_Y_START + (ITEM_H * 10) + ITEM_TEXT_Y_OFFSET;
 
         wchar_t text[128];
-        snwprintf(text, 128, L"Booting in %u seconds", state->autoboot_countdown_sec);
+        const wchar_t *format = state->autoboot_countdown_sec == 1
+            ? L"Booting in %u second"
+            : L"Booting in %u seconds";
+        snwprintf(text, 128, format, state->autoboot_countdown_sec);
         font_print(state->gs, ITEM_TEXT_X_START, y, 1, FG, text);
     }
     else
