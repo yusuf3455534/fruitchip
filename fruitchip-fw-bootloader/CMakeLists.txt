@@ -34,11 +34,17 @@ target_include_directories(fruitchip-fw-bootloader
 
 target_compile_definitions(fruitchip-fw-bootloader
     PUBLIC
-        PICO_DEFAULT_WS2812_PIN=${PICO_DEFAULT_WS2812_PIN}
         FW_PARTITION_OFFSET=${FW_PARTITION_OFFSET}
         FW_PARTITION_SIZE_BYTES=${FW_PARTITION_SIZE_BYTES}
         UPDATE_PARTITION_OFFSET=${UPDATE_PARTITION_OFFSET}
 )
+
+if (DEFINED PICO_DEFAULT_WS2812_PIN)
+    target_compile_definitions(fruitchip-fw-bootloader
+        PUBLIC
+            PICO_DEFAULT_WS2812_PIN=${PICO_DEFAULT_WS2812_PIN}
+    )
+endif()
 
 target_compile_definitions(fruitchip-fw-bootloader
     PUBLIC

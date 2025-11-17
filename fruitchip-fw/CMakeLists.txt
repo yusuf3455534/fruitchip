@@ -57,7 +57,6 @@ target_compile_definitions(fruitchip-fw
         BOOT_ROM_OE_PIN=${BOOT_ROM_OE_PIN}
         RST_PIN=${RST_PIN}
         PICO_FLASH_SIZE_BYTES=${PICO_FLASH_SIZE_BYTES}
-        PICO_DEFAULT_WS2812_PIN=${PICO_DEFAULT_WS2812_PIN}
         FW_PARTITION_SIZE_BYTES=${FW_PARTITION_SIZE_BYTES}
         APPS_PARTITION_SIZE_BYTES=${APPS_PARTITION_SIZE_BYTES}
         UPDATE_PARTITION_SIZE_BYTES=${UPDATE_PARTITION_SIZE_BYTES}
@@ -67,6 +66,13 @@ target_compile_definitions(fruitchip-fw
         WEAR_LEVELING_RP2040_FLASH
         WEAR_LEVELING_RP2040_FLASH_BASE=${WEAR_LEVELING_RP2040_FLASH_BASE}
 )
+
+if (DEFINED PICO_DEFAULT_WS2812_PIN)
+    target_compile_definitions(fruitchip-fw
+        PUBLIC
+            PICO_DEFAULT_WS2812_PIN=${PICO_DEFAULT_WS2812_PIN}
+    )
+endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/boot_rom/boot_rom.pio ${CMAKE_CURRENT_BINARY_DIR}/boot_rom.pio)
 
