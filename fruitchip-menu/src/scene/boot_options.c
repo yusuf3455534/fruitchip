@@ -130,7 +130,6 @@ void scene_switch_to_options(struct state *state, u8 app_idx)
     wchar_t header[39 + 255];
     snwprintf(header, 39 + 255, L"Options: %ls", name);
 
-    wstring_free(scene_state.header);
     scene_state.header = wstring_new_copied_wstr(header);
 
     scene_state.list.hilite_idx = 0;
