@@ -6,6 +6,7 @@
 extern uint8_t PPCTTY_IRX[];
 extern const uint32_t PPCTTY_IRX_SIZE;
 
+// fwfs dependencies: loadcore, stdio, ioman, thsemap
 extern uint8_t FWFS_IRX[];
 extern const uint32_t FWFS_IRX_SIZE;
 
