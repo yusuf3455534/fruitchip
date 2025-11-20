@@ -7,12 +7,7 @@
 #include <boot_rom/loader.h>
 #include <boot_rom/data_out.h>
 
-// assuming the first `OSDSYS` on the bus is going to be romdir entry,
-// remember file size, then watch for ELFs and compare p_memsz to find OSDSYS,
-// then look for ExecPS2 syscall to inject stage 1 payload into
-
 static uint32_t counter = 0;
-static uint32_t osdsys_size = 0;
 static uint32_t bytes_read = 0;
 
 void handle_read_find_hook_osdsys(uint8_t);
@@ -82,7 +77,7 @@ void __time_critical_func(handle_read_find_hook_osdsys)(uint8_t r)
 {
     bytes_read += 1;
 
-    if (bytes_read >= osdsys_size / 2)
+    if (bytes_read >= 1024)
     {
         // failed to find the syscall table
         read_handler = handle_read_find_osdsys_elf;
@@ -95,71 +90,38 @@ void __time_critical_func(handle_read_find_hook_osdsys)(uint8_t r)
 
 void __time_critical_func(handle_read_find_osdsys_elf)(uint8_t r)
 {
-    static uint32_t p_memsz = 0;
-
     counter += 1;
 
     switch (counter)
     {
         case 1: if (r != 0x7F) { goto exit; } break;
-        case 2: if (r != 0x45) { goto exit; } break;
-        case 3: if (r != 0x4C) { goto exit; } break;
-        case 4: if (r != 0x46) { goto exit; } break;
-        case 73: p_memsz = r; break;
-        case 74: p_memsz |= r << 8; break;
-        case 75: p_memsz |= r << 16; break;
-        case 76: p_memsz |= r << 24;
-            if (p_memsz == osdsys_size)
-            {
-                read_handler = handle_read_find_hook_osdsys;
-                bytes_read = 0;
-            }
-exit:
-        [[fallthrough]];
-        default:
-            if (counter >= 5 && counter <= 72) {} // skip to p_memsize
-            else counter = 0;
-    }
-}
+        case 2: if (r != 0x45) { goto exit; } break; // E
+        case 3: if (r != 0x4C) { goto exit; } break; // L
+        case 4: if (r != 0x46) { goto exit; } break; // F
 
-void __time_critical_func(handle_read_find_osdsys_size)(uint8_t r)
-{
-    counter += 1;
+        // e_entry
+        case 25: if (r != 0x08) { goto exit; } break;
+        case 26: if (r != 0x00) { goto exit; } break;
+        case 27: if (r != 0x10) { goto exit; } break;
+        case 28: if (r != 0x00) { goto exit; } break;
 
-    //  0  1  2  3   4  5  6  7   8  9 10 11  12 13 14 15
-    // ---------------------------------------------------
-    // 4F 53 44 53  59 53 00 00  00 00 xx xx  yy yy yy yy | OSDSYS..........
-    //                                 |      |- file size
-    //                                 |- extinfo size
+        // e_shnum
+        case 49: if (r != 0x08) { goto exit; } break;
+        case 50: if (r != 0x00) { goto exit; } break;
 
-    switch (counter)
-    {
-        case 1: if (r != 0x53) { goto exit; } break;
-        case 2: if (r != 0x44) { goto exit; } break;
-        case 3: if (r != 0x53) { goto exit; } break;
-        case 4: if (r != 0x59) { goto exit; } break;
-        case 5: if (r != 0x53) { goto exit; } break;
-        case 6:
-        case 7:
-        case 8:
-        case 9: if (r != 0x00) { goto exit; } break;
-
-        case 10: break; // extinfo size
-        case 11: break;
-
-        case 12: osdsys_size = r; break;
-        case 13: osdsys_size |= r << 8; break;
-        case 14: osdsys_size |= r << 16; break;
-        case 15: osdsys_size |= r << 24;
-            // file size in ELF header, will not match for protokernel OSDSYS
-            osdsys_size -= 556;
-            read_handler = handle_read_find_osdsys_elf;
-            counter = 0;
+        // e_shstrndx
+        case 51: if (r != 0x07) { goto exit; } break;
+        case 52: if (r != 0x00) { goto exit; }
+            read_handler = handle_read_find_hook_osdsys;
+            bytes_read = 0;
+            counter  = 0;
             break;
+
 exit:
         default:
-            read_handler = handle_read_idle;
-            counter = 0;
+            if (counter >= 5 && counter <= 24) {} // skip to e_entry
+            else if (counter >= 29 && counter <= 48) {} // skip to e_shnum
+            else counter = 0;
     }
 }
 
