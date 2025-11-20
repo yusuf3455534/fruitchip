@@ -42,7 +42,8 @@ bool input_pad_is_ready()
     int port1 = padGetState(1, 0);
 
     // nothing to wait for if no controllers are connected
-    if (port0 == PAD_STATE_DISCONN && port1 == PAD_STATE_DISCONN)
+    if ((port0 == PAD_STATE_DISCONN && port1 == PAD_STATE_DISCONN) ||
+        (port0 == PAD_STATE_FINDCTP1 && port1 == PAD_STATE_DISCONN ))
         return true;
 
     return port0 == PAD_STATE_STABLE || port1 == PAD_STATE_STABLE;
