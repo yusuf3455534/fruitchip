@@ -21,7 +21,7 @@ static int memcpy_channel;
 
 static uint8_t sector_buffer[FLASH_SECTOR_SIZE] __attribute__((aligned(FLASH_SECTOR_SIZE)));
 
-void __time_critical_func(dma_init)()
+void __time_critical_func(dma_init_crc)()
 {
     dma_channel_config cfg;
     static uint8_t dummy;
@@ -49,10 +49,20 @@ void __time_critical_func(dma_init)()
     dma_channel_set_config(memcpy_channel, &cfg, false);
 }
 
-void __time_critical_func(dma_deinit)()
+void __time_critical_func(dma_init_memcpy)()
 {
-    dma_channel_unclaim(crc_channel);
-    dma_channel_unclaim(memcpy_channel);
+    dma_channel_config cfg;
+
+    memcpy_channel = dma_claim_unused_channel(true);
+    cfg = dma_channel_get_default_config(memcpy_channel);
+    channel_config_set_transfer_data_size(&cfg, DMA_SIZE_8);
+    channel_config_set_read_increment(&cfg, true);
+    channel_config_set_write_increment(&cfg, true);
+    channel_config_set_ring(&cfg, true, 12); // log2(4096) == 12
+
+    dma_channel_set_write_addr(memcpy_channel, &sector_buffer, false);
+    dma_channel_set_transfer_count(memcpy_channel, FLASH_SECTOR_SIZE, false);
+    dma_channel_set_config(memcpy_channel, &cfg, false);
 }
 
 static inline uint32_t bl2crc(uint32_t x)
@@ -95,8 +105,6 @@ void __time_critical_func(try_start_firmware)()
     uint32_t fw_partition_addr = XIP_BASE + FW_PARTITION_OFFSET;
     bool is_valid = is_fw_valid();
 
-    dma_deinit();
-
     if (!is_valid)
     {
         printf("fw bad\n");
@@ -136,6 +144,8 @@ void __time_critical_func(try_update_firmware)()
     else
     {
         printf("update ok\n");
+
+        dma_init_memcpy();
 
         // erase first fw sector, this "breaks" existing fw, and marks the update as to be in progress
         // in case update is interrupted, this should allow to retry the update
@@ -199,7 +209,7 @@ int __time_critical_func(main)()
     status_led_init();
     colored_status_led_set_on_with_color(RGB_OK_BOOTLOADER);
 
-    dma_init();
+    dma_init_crc();
 
     bool is_fw_ok = is_fw_valid();
     bool update_requested = watchdog_hw->scratch[0] == MODCHIP_UPDATE_MAGIC;
