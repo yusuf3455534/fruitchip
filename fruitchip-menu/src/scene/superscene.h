@@ -3,6 +3,7 @@
 #include "../state.h"
 
 struct scene {
+    void (*tick_handler)(struct state *state);
     void (*input_handler)(struct state *state, int input);
     void (*paint_handler)(struct state *state);
 };
@@ -13,6 +14,7 @@ struct superscene {
     u64 last_paint;
 };
 
+void scene_tick_handler_superscene(struct state *state);
 void scene_input_handler_superscene(struct state *state, int input);
 void scene_paint_handler_superscene(struct state *state);
 void superscene_paint_after_vsync(struct state *state);

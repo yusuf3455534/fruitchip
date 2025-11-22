@@ -139,6 +139,8 @@ int main()
     printf("entering main loop\n");
     while (true)
     {
+        scene_tick_handler_superscene(state);
+
         input = input_pad_poll();
         if (input != prevInput)
         {

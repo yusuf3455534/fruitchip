@@ -10,6 +10,17 @@
 
 struct superscene superscene = { 0 };
 
+void scene_tick_handler_superscene(struct state *state)
+{
+    if (!superscene.scenes_len)
+        return;
+
+    struct scene *top_scene = superscene.scenes[superscene.scenes_len - 1];
+
+    if (top_scene->tick_handler)
+        top_scene->tick_handler(state);
+}
+
 void scene_input_handler_superscene(struct state *state, int input)
 {
     if (!superscene.scenes_len)
