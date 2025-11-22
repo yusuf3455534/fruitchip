@@ -10,3 +10,6 @@
 [submodule "fruitchip-fw-apps/ps2link"]
 	path = fruitchip-fw-apps/ps2link
 	url = https://github.com/ps2dev/ps2link.git
+[submodule "fruitchip-menu/lib/mlib"]
+	path = fruitchip-menu/lib/mlib
+	url = https://github.com/P-p-H-d/mlib.git
