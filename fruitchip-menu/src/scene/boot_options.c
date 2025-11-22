@@ -9,12 +9,12 @@
 #include "modchip/apps.h"
 #include "modchip/settings.h"
 
-#include "../components/font.h"
-#include "boot_options.h"
-#include "superscene.h"
-#include "../boot_list.h"
-#include "../constants.h"
-#include "../utils.h"
+#include "components/font.h"
+#include "scene/boot_options.h"
+#include "scene/superscene.h"
+#include "boot_list.h"
+#include "constants.h"
+#include "utils.h"
 
 static wchar_t *ON = L"On";
 static wchar_t *OFF = L"Off";

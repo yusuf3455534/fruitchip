@@ -43,6 +43,7 @@ target_include_directories(fruitchip-menu
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../fruitchip-include
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib
 )
 
 target_link_libraries(fruitchip-menu

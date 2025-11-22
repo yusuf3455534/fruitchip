@@ -5,7 +5,7 @@
 #include <kernel.h>
 #include <libpad.h>
 
-#include "pad.h"
+#include "input/pad.h"
 
 static unsigned char padBuffer[2][256] ALIGNED(64);
 static unsigned int prevInputs[2] = {0, 0};

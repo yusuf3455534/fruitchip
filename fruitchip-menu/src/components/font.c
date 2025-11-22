@@ -6,8 +6,8 @@
 #include "minmax.h"
 
 #include <font/dejavu_sans_mono.h>
-#include "../components/font.h"
-#include "../utils.h"
+#include "components/font.h"
+#include "utils.h"
 
 const struct BMFont font = DEJAVU_SANS_MONO;
 

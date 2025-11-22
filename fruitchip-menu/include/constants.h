@@ -5,9 +5,6 @@
 
 // region: gui
 
-// static const u64 FG = GS_SETREG_RGBA(0x00,0x00,0x00,0x80); // black
-// static const u64 BG = GS_SETREG_RGBA(0xFF,0xFF,0xFF,0x80); // white
-
 static const u64 FG = GS_SETREG_RGBA(0xFF, 0xFF, 0xFF, 0x80); // #ffffff
 static const u64 BG = GS_SETREG_RGBA(0x00, 0x00, 0x00, 0x80); // #000000
 

@@ -9,13 +9,13 @@
 #include "modchip/version.h"
 
 #include "uf2.h"
+#include "components/font.h"
+#include "scene/message.h"
+#include "scene/settings.h"
+#include "constants.h"
+#include "update.h"
+#include "utils.h"
 #include "version.h"
-#include "../components/font.h"
-#include "message.h"
-#include "settings.h"
-#include "../constants.h"
-#include "../update.h"
-#include "../utils.h"
 
 static struct update_state {
     struct list_state list;

@@ -5,10 +5,10 @@
 
 #include "libpad.h"
 
-#include "superscene.h"
-#include "message.h"
-#include "../components/font.h"
-#include "../constants.h"
+#include "components/font.h"
+#include "scene/superscene.h"
+#include "scene/message.h"
+#include "constants.h"
 
 static struct scene_state_message
 {

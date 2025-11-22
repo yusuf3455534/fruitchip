@@ -2,11 +2,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "superscene.h"
-#include "../utils.h"
-#include "../state.h"
-#include "../constants.h"
-#include "../components/font.h"
+#include "scene/superscene.h"
+#include "utils.h"
+#include "state.h"
+#include "constants.h"
+#include "components/font.h"
 
 struct superscene superscene = { 0 };
 

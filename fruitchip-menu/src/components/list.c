@@ -5,9 +5,10 @@
 
 #include "minmax.h"
 
-#include "list.h"
-#include "../constants.h"
-#include "../components/font.h"
+#include "components/list.h"
+#include "components/font.h"
+#include "constants.h"
+#include "utils.h"
 
 bool list_handle_input(struct list_state *state, int input)
 {
@@ -26,35 +27,6 @@ bool list_handle_input(struct list_state *state, int input)
 
     return false;
 }
-
-// void list_draw_header(GSGLOBAL *gs, struct list_state *state)
-// {
-//     if (!state->header)
-//         return;
-//
-//     float y1 = HEADER_Y_START;
-//     float y2 = y1 + ITEM_H;
-//
-//     // clear
-//     gsKit_prim_sprite(
-//         gs,
-//         MARGIN_X, y1,
-//         gs->Width - MARGIN_X, y2,
-//         1,
-//         BG
-//     );
-//
-//     font_print(gs, ITEM_TEXT_X_START, y1 + ITEM_TEXT_Y_OFFSET, 1, FG, state->header);
-//
-//     // draw separator line on top of the first list item
-//     gsKit_prim_sprite(
-//         gs,
-//         MARGIN_X, y2,
-//         gs->Width - MARGIN_X, y2 + HEADER_H,
-//         1,
-//         FG
-//     );
-// }
 
 static void list_draw_item(GSGLOBAL *gs, float y, struct list_item *item, bool hilite)
 {

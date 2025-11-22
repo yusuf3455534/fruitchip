@@ -1,9 +1,9 @@
 #include <stdio.h>
 
-#include "../components/font.h"
-#include "boot_list.h"
-#include "init.h"
-#include "../constants.h"
+#include "components/font.h"
+#include "scene/boot_list.h"
+#include "scene/init.h"
+#include "constants.h"
 
 static void scene_input_handler_startup(struct state *state, int input)
 {

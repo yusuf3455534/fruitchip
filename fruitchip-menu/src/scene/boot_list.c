@@ -17,16 +17,16 @@
 #include "modchip/apps.h"
 #include "modchip/settings.h"
 
-#include "../components/font.h"
-#include "../components/list.h"
-#include "boot_options.h"
-#include "message.h"
-#include "settings.h"
-#include "superscene.h"
-#include "../boot_list.h"
-#include "../constants.h"
-#include "../state.h"
-#include "../utils.h"
+#include "components/font.h"
+#include "components/list.h"
+#include "scene/boot_options.h"
+#include "scene/message.h"
+#include "scene/settings.h"
+#include "scene/superscene.h"
+#include "boot_list.h"
+#include "constants.h"
+#include "state.h"
+#include "utils.h"
 
 static void boot_osdsys(struct state *state)
 {

@@ -3,7 +3,8 @@
 #include "libpad.h"
 
 #include "modchip/version.h"
-#include "settings.h"
+
+#include "scene/settings.h"
 #include "version.h"
 
 static struct list_state list = {

@@ -27,7 +27,6 @@ struct list_state
 #define MAX_LIST_ITEMS_ON_SCREEN 10
 
 bool list_handle_input(struct list_state *state, int input);
-// void list_draw_header(GSGLOBAL *gs, struct list_state *state);
 void list_draw_items(GSGLOBAL *gs, struct list_state *state);
 u32 list_push_item(struct list_state *state, struct list_item *item);
 void list_pop_item(struct list_state *state);

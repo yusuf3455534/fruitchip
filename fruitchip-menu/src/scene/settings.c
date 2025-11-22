@@ -3,11 +3,11 @@
 #include "libpad.h"
 
 #include "modchip/settings.h"
-
-#include "settings.h"
-#include "../utils.h"
 #include "minmax.h"
-#include "message.h"
+
+#include "scene/message.h"
+#include "scene/settings.h"
+#include "utils.h"
 
 static struct list_state list = {
     .start_item_idx = 0,

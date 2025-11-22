@@ -1,6 +1,6 @@
-#include "button_guide.h"
-#include "../components/font.h"
-#include "../constants.h"
+#include "components/button_guide.h"
+#include "components/font.h"
+#include "constants.h"
 
 static float draw_button(
     GSGLOBAL *gs,
