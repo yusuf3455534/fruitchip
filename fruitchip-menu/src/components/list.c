@@ -10,25 +10,52 @@
 #include "constants.h"
 #include "utils.h"
 
-bool list_handle_input(struct list_state *state, int input)
+// region: list item
+
+void list_item_init(list_item_t *obj)
+{
+    obj->left_text = NULL;
+    obj->right_text = NULL;
+}
+
+void list_item_copy(list_item_t *obj, const list_item_t *src)
+{
+    list_item_init(obj);
+
+    if (src->left_text)
+        obj->left_text = wstring_new_copied_wstr(wstring_data(src->left_text));
+
+    if (src->right_text)
+        obj->right_text = wstring_new_copied_wstr(wstring_data(src->right_text));
+}
+
+void list_item_free(list_item_t *obj)
+{
+    wstring_free(obj->left_text);
+    wstring_free(obj->right_text);
+}
+
+// endregion: list item
+
+bool list_handle_input(list_state_t *state, int input)
 {
     if (input & PAD_UP)
     {
-        if (state->hilite_idx == 0) state->hilite_idx = state->items_count - 1;
+        if (state->hilite_idx == 0) state->hilite_idx = list_len(state) - 1;
         else state->hilite_idx -= 1;
         return true;
     }
     else if (input & PAD_DOWN)
     {
         state->hilite_idx += 1;
-        if (state->hilite_idx > state->items_count - 1) state->hilite_idx = 0;
+        if (state->hilite_idx > list_len(state) - 1) state->hilite_idx = 0;
         return true;
     }
 
     return false;
 }
 
-static void list_draw_item(GSGLOBAL *gs, float y, struct list_item *item, bool hilite)
+static void list_draw_item(GSGLOBAL *gs, float y, list_item_t *item, bool hilite)
 {
     float y2 = y + ITEM_H;
 
@@ -58,20 +85,19 @@ static void list_draw_item(GSGLOBAL *gs, float y, struct list_item *item, bool h
             wstring_data(item->right_text)
         );
     }
-
 }
 
-void list_draw_items(GSGLOBAL *gs, struct list_state *state)
+void list_draw_items(GSGLOBAL *gs, list_state_t *state)
 {
     u32 start_idx, end_idx;
 
-    if (!state->items_count)
+    if (!list_len(state))
         return;
 
     if (state->hilite_idx < state->max_items)
     {
         start_idx = 0;
-        end_idx = MIN(state->max_items, state->items_count) - 1;
+        end_idx = MIN(state->max_items, list_len(state)) - 1;
     }
     else
     {
@@ -83,8 +109,8 @@ void list_draw_items(GSGLOBAL *gs, struct list_state *state)
     float scrollbar_end_y = start_y + (ITEM_H * state->max_items);
     float scrollbar_max_h = scrollbar_end_y - start_y;
     float scrollbar_x = gs->Width;
-    float scrollbar_h = scrollbar_max_h / state->items_count * state->max_items;
-    float scrollbar_y1 = start_y + (scrollbar_max_h / state->items_count * start_idx);
+    float scrollbar_h = scrollbar_max_h / list_len(state) * state->max_items;
+    float scrollbar_y1 = start_y + (scrollbar_max_h / list_len(state) * start_idx);
     float scrollbar_y2 = scrollbar_y1 + scrollbar_h;
 
     u32 item_screen_idx = 0;
@@ -94,12 +120,12 @@ void list_draw_items(GSGLOBAL *gs, struct list_state *state)
         if (start_idx > end_idx)
             break;
 
-        if (state->items[start_idx]->left_text)
+        if (array_list_item_get(state->items, start_idx)->left_text)
         {
             list_draw_item(
                 gs,
                 start_y + (ITEM_H * item_screen_idx),
-                state->items[start_idx],
+                array_list_item_get(state->items, start_idx),
                 start_idx == state->hilite_idx
             );
         }
@@ -108,7 +134,7 @@ void list_draw_items(GSGLOBAL *gs, struct list_state *state)
         start_idx += 1;
     }
 
-    if (state->items_count > state->max_items)
+    if (list_len(state) > state->max_items)
     {
         // scrollbar
         gsKit_prim_sprite(
@@ -121,36 +147,29 @@ void list_draw_items(GSGLOBAL *gs, struct list_state *state)
     }
 }
 
-u32 list_push_item(struct list_state *state, struct list_item *item)
+u32 list_push_item(list_state_t *state, const list_item_t item)
 {
-    if (state->items_count == 0)
-        state->items = malloc(sizeof(*item));
+    if (!list_len(state))
+        array_list_item_init(state->items);
 
-    u32 idx = state->items_count;
-
-    state->items_count += 1;
-    state->items = realloc(state->items, sizeof(*state->items) * state->items_count);
-
-    state->items[idx] = malloc(sizeof(*item));
-    memcpy(state->items[idx], item, sizeof(*item));
+    u32 idx = list_len(state);
+    array_list_item_push_back(state->items, item);
 
     return idx;
 }
 
-void list_pop_item(struct list_state *state)
+void list_pop_item(list_state_t *state)
 {
-    if (!state->items_count) return;
+    if (!list_len(state))
+        return;
 
-    state->items_count -= 1;
+    array_list_item_pop_back(NULL, state->items);
 
-    struct list_item *last_item = state->items[state->items_count];
-    wstring_free(last_item->left_text);
-    wstring_free(last_item->right_text);
-    free(last_item);
+    if (!list_len(state))
+        array_list_item_clear(state->items);
+}
 
-    size_t new_size = sizeof(*state->items) * state->items_count;
-    if (new_size == 0)
-        free(state->items);
-    else
-        state->items = realloc(state->items, new_size);
+size_t list_len(list_state_t *state)
+{
+    return state->items->size;
 }

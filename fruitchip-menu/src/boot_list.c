@@ -64,7 +64,7 @@ static void apps_attr_populate(struct state *state)
 {
     free(state->apps_attr);
 
-    u8 apps_count = state->boot_list.items_count; // includes OSDSYS
+    u8 apps_count = list_len(&state->boot_list); // includes OSDSYS
     state->apps_attr = malloc(sizeof(*state->apps_attr) * apps_count);
 
     state->apps_attr[BOOT_ITEM_OSDSYS] = MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK | MODCHIP_APPS_ATTR_OSDSYS;
@@ -86,7 +86,7 @@ bool apps_list_populate(struct state *state)
 {
     bool ret = false;
 
-    while (state->boot_list.items_count) list_pop_item(&state->boot_list);
+    while (list_len(&state->boot_list)) list_pop_item(&state->boot_list);
 
     state->boot_list.hilite_idx = BOOT_ITEM_OSDSYS;
     state->boot_list.start_item_idx = 0;
@@ -94,7 +94,7 @@ bool apps_list_populate(struct state *state)
 
     struct list_item list_item;
     list_item.left_text = wstring_new_static(L"OSDSYS");
-    list_push_item(&state->boot_list, &list_item);
+    list_push_item(&state->boot_list, list_item);
 
     u8 *apps_index = apps_read_index();
     if (!apps_index)
@@ -108,7 +108,7 @@ bool apps_list_populate(struct state *state)
     {
         u8 name_len = *ptr++;
         list_item.left_text = wstring_new_copied_str((char *)ptr, name_len);
-        list_push_item(&state->boot_list, &list_item);
+        list_push_item(&state->boot_list, list_item);
 
         ptr += name_len;
     }
@@ -117,7 +117,7 @@ bool apps_list_populate(struct state *state)
 
     int res = modchip_settings_get(MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX, &state->autoboot_item_idx);
     print_debug("MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX %u ret %i\n", state->autoboot_item_idx, res);
-    if (res && state->autoboot_item_idx < state->boot_list.items_count)
+    if (res && state->autoboot_item_idx < list_len(&state->boot_list))
         state->boot_list.hilite_idx = state->autoboot_item_idx;
 
     ret = true;

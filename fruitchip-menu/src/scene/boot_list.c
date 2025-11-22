@@ -112,14 +112,14 @@ void scene_input_handler_boot_list(struct state *state, int input)
 
     if (input & PAD_UP)
     {
-        if (state->boot_list.hilite_idx == 0) state->boot_list.hilite_idx = state->boot_list.items_count - 1;
+        if (state->boot_list.hilite_idx == 0) state->boot_list.hilite_idx = list_len(&state->boot_list) - 1;
         else state->boot_list.hilite_idx -= 1;
         state->repaint = true;
     }
     else if (input & PAD_DOWN)
     {
         state->boot_list.hilite_idx += 1;
-        if (state->boot_list.hilite_idx > state->boot_list.items_count - 1) state->boot_list.hilite_idx = 0;
+        if (state->boot_list.hilite_idx > list_len(&state->boot_list) - 1) state->boot_list.hilite_idx = 0;
         state->repaint = true;
     }
 

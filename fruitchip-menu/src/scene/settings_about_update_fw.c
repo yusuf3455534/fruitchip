@@ -18,7 +18,7 @@
 #include "version.h"
 
 static struct update_state {
-    struct list_state list;
+    list_state_t list;
 } update_state;
 
 #define ITEM_IDX_NO 0
@@ -26,7 +26,7 @@ static struct update_state {
 
 static void pop_scene(struct state *state)
 {
-    while (update_state.list.items_count) list_pop_item(&update_state.list);
+    while (list_len(&update_state.list)) list_pop_item(&update_state.list);
     superscene_pop_scene();
     state->repaint = true;
 }
@@ -193,15 +193,15 @@ void scene_switch_to_settings_about_update_fw(struct state *state)
     update_state.list.start_item_idx = 6;
     update_state.list.max_items = MAX_LIST_ITEMS_ON_SCREEN;
 
-    struct list_item item;
+    list_item_t item;
 
     item.left_text = wstring_new_static(L"No");
     item.right_text = NULL;
-    list_push_item(&update_state.list, &item);
+    list_push_item(&update_state.list, item);
 
     item.left_text = wstring_new_static(L"Yes");
     item.right_text = NULL;
-    list_push_item(&update_state.list, &item);
+    list_push_item(&update_state.list, item);
 
     struct scene scene = {
         .input_handler = scene_input_handler_settings_update,

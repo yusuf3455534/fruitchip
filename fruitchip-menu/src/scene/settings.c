@@ -9,7 +9,7 @@
 #include "scene/settings.h"
 #include "utils.h"
 
-static struct list_state list = {
+static list_state_t list = {
     .start_item_idx = 0,
     .max_items = MAX_LIST_ITEMS_ON_SCREEN,
 };
@@ -51,26 +51,29 @@ static void save_settings(struct state *state)
 
 static void update_autoboot_text(struct state *state)
 {
-    wstring_free(list.items[ITEM_IDX_AUTOBOOT]->right_text);
-    list.items[ITEM_IDX_AUTOBOOT]->right_text = wstring_new_static(state->autoboot ? L"On" : L"Off");
+    list_item_t *autoboot = array_list_item_get(list.items, ITEM_IDX_AUTOBOOT);
+    wstring_free(autoboot->right_text);
+    autoboot->right_text = wstring_new_static(state->autoboot ? L"On" : L"Off");
 }
 
 static void update_autoboot_delay_text(struct state *state)
 {
-    wstring_free(list.items[ITEM_IDX_AUTOBOOT_DELAY]->right_text);
+    list_item_t *autoboot_delay = array_list_item_get(list.items, ITEM_IDX_AUTOBOOT_DELAY);
 
-    list.items[ITEM_IDX_AUTOBOOT_DELAY]->right_text = wstring_new_allocated(64);
+    wstring_free(autoboot_delay->right_text);
+
+    autoboot_delay->right_text = wstring_new_allocated(64);
 
     if (state->autoboot_delay_sec == 1)
-        snwprintf(wstring_data(list.items[ITEM_IDX_AUTOBOOT_DELAY]->right_text), 64, L"%u second", state->autoboot_delay_sec);
+        snwprintf(wstring_data(autoboot_delay->right_text), 64, L"%u second", state->autoboot_delay_sec);
     else
-        snwprintf(wstring_data(list.items[ITEM_IDX_AUTOBOOT_DELAY]->right_text), 64, L"%u seconds", state->autoboot_delay_sec);
+        snwprintf(wstring_data(autoboot_delay->right_text), 64, L"%u seconds", state->autoboot_delay_sec);
 }
 
 static void pop_scene(struct state *state)
 {
     superscene_pop_scene();
-    while (list.items_count) list_pop_item(&list);
+    while (list_len(&list)) list_pop_item(&list);
     list.hilite_idx = 0;
     state->repaint = true;
 }
@@ -192,21 +195,21 @@ static void scene_paint_handler_settings(struct state *state)
 
 void scene_switch_to_settings(struct state *state)
 {
-    struct list_item item;
+    list_item_t item;
 
     item.left_text = wstring_new_static(L"Autoboot");
     item.right_text = NULL;
-    list_push_item(&list, &item);
+    list_push_item(&list, item);
     update_autoboot_text(state);
 
     item.left_text = wstring_new_static(L"Autoboot delay");
     item.right_text = NULL;
-    list_push_item(&list, &item);
+    list_push_item(&list, item);
     update_autoboot_delay_text(state);
 
     item.left_text = wstring_new_static(L"About");
     item.right_text = wstring_new_static(L">");
-    list_push_item(&list, &item);
+    list_push_item(&list, item);
 
     struct scene scene = {
         .input_handler = scene_input_handler_settings,

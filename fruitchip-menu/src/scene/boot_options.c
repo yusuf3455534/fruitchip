@@ -21,7 +21,7 @@ static wchar_t *OFF = L"Off";
 
 static struct scene_state {
     wstring_t *header;
-    struct list_state list;
+    list_state_t list;
     union osdsys_settings settings;
 
     u32 item_idx_osdsys_skip_intro;
@@ -39,7 +39,7 @@ static void pop_scene(struct state *state)
     state->header = NULL;
     wstring_free(scene_state.header);
 
-    while (scene_state.list.items_count) list_pop_item(&scene_state.list);
+    while (list_len(&scene_state.list)) list_pop_item(&scene_state.list);
 
     superscene_pop_scene();
     state->repaint = true;
@@ -58,7 +58,7 @@ static void handle_toggle_option(struct state *state)
         {
             state->osdsys.field.boot_browser = false;
 
-            struct list_item *boot_browser = scene_state.list.items[scene_state.item_idx_osdsys_boot_browser];
+            list_item_t *boot_browser = array_list_item_get(scene_state.list.items, scene_state.item_idx_osdsys_boot_browser);
             wstring_free(boot_browser->right_text);
             boot_browser->right_text = wstring_new_static(OFF);
         }
@@ -70,7 +70,7 @@ static void handle_toggle_option(struct state *state)
         {
             state->osdsys.field.skip_intro = false;
 
-            struct list_item *skip_intro = scene_state.list.items[scene_state.item_idx_osdsys_skip_intro];
+            list_item_t *skip_intro = array_list_item_get(scene_state.list.items, scene_state.item_idx_osdsys_skip_intro);
             wstring_free(skip_intro->right_text);
             skip_intro->right_text = wstring_new_static(OFF);
         }
@@ -88,7 +88,7 @@ static void handle_toggle_option(struct state *state)
         return;
     }
 
-    struct list_item *hilite = scene_state.list.items[hilite_idx];
+    list_item_t *hilite = array_list_item_get(scene_state.list.items, hilite_idx);
     wstring_free(hilite->right_text);
     hilite->right_text = wstring_new_static(value ? ON : OFF);
 
@@ -120,12 +120,12 @@ static void scene_paint_handler_options(struct state *state)
 
 void scene_switch_to_options(struct state *state, u8 app_idx)
 {
-    wchar_t *name;
+    const wchar_t *name;
 
     if (app_idx == BOOT_ITEM_OSDSYS)
         name = L"OSDSYS";
     else
-        name = wstring_data(state->boot_list.items[app_idx]->left_text);
+        name = wstring_data(array_list_item_get(state->boot_list.items, app_idx)->left_text);
 
     wchar_t header[39 + 255];
     snwprintf(header, 39 + 255, L"Options: %ls", name);
@@ -139,26 +139,26 @@ void scene_switch_to_options(struct state *state, u8 app_idx)
     modchip_settings_get(MODCHIP_SETTINGS_MENU_OSDSYS_SETTINGS, &state->osdsys.value);
     scene_state.settings.value = state->osdsys.value;
 
-    struct list_item item;
+    list_item_t item;
     u32 attr = state->apps_attr[app_idx];
 
     if (attr & MODCHIP_APPS_ATTR_OSDSYS)
     {
         item.left_text = wstring_new_static(L"Skip opening");
         item.right_text = wstring_new_static(state->osdsys.field.skip_intro ? ON : OFF);
-        scene_state.item_idx_osdsys_skip_intro = list_push_item(&scene_state.list, &item);
+        scene_state.item_idx_osdsys_skip_intro = list_push_item(&scene_state.list, item);
 
         item.left_text = wstring_new_static(L"Boot into browser");
         item.right_text = wstring_new_static(state->osdsys.field.boot_browser ? ON : OFF);
-        scene_state.item_idx_osdsys_boot_browser = list_push_item(&scene_state.list, &item);
+        scene_state.item_idx_osdsys_boot_browser = list_push_item(&scene_state.list, item);
 
         item.left_text = wstring_new_static(L"Skip memory card system update");
         item.right_text = wstring_new_static(state->osdsys.field.skip_mc_update ? ON : OFF);
-        scene_state.item_idx_osdsys_skip_mc = list_push_item(&scene_state.list, &item);
+        scene_state.item_idx_osdsys_skip_mc = list_push_item(&scene_state.list, item);
 
         item.left_text = wstring_new_static(L"Skip hard drive system update");
         item.right_text = wstring_new_static(state->osdsys.field.skip_hdd_update ? ON : OFF);
-        scene_state.item_idx_osdsys_skip_hdd = list_push_item(&scene_state.list, &item);
+        scene_state.item_idx_osdsys_skip_hdd = list_push_item(&scene_state.list, item);
     }
 
 

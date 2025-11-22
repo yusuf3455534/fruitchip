@@ -27,7 +27,7 @@ struct state {
     wchar_t *header;
     struct button_guide_state button_guide;
 
-    struct list_state boot_list;
+    list_state_t boot_list;
 
     u32 *apps_attr;
 
