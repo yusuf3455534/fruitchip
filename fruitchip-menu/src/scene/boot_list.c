@@ -65,7 +65,7 @@ static void boot_fwfs(struct state *state)
     }
 
     char path[] = { 'f', 'w', 'f', 's', ':', FWFS_MODE_DATA_CHAR, app_idx };
-    LoadELFFromFile(path, 0, NULL);
+    LoadELFFromFile(path, argc, argv);
 }
 
 // region: input
