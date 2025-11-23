@@ -140,7 +140,7 @@ void scene_switch_to_options(struct state *state, u8 app_idx)
     scene_state.settings.value = state->osdsys.value;
 
     list_item_t item;
-    u32 attr = state->apps_attr[app_idx];
+    u32 attr = *array_u32_get(state->boot_list_attr, app_idx);
 
     if (attr & MODCHIP_APPS_ATTR_OSDSYS)
     {

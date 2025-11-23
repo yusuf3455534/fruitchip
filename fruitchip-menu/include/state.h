@@ -4,9 +4,14 @@
 
 #include <tamtypes.h>
 #include <gsKit.h>
+
+#include "mlib/m-array.h"
+
 #include "input/pad.h"
 #include "components/list.h"
 #include "components/button_guide.h"
+
+ARRAY_DEF(array_u32, u32)
 
 union osdsys_settings {
     struct {
@@ -28,8 +33,7 @@ struct state {
     struct button_guide_state button_guide;
 
     list_state_t boot_list;
-
-    u32 *apps_attr;
+    array_u32_t boot_list_attr;
 
     bool autoboot;
     u32 autoboot_item_idx;

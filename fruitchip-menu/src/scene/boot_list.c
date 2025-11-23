@@ -49,7 +49,7 @@ static void boot_fwfs(struct state *state)
     int argc =  0;
     char *argv[4];
 
-    u32 attr = state->apps_attr[app_idx];
+    u32 attr = *array_u32_get(state->boot_list_attr, app_idx);
 
     if (attr & MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK)
     {
@@ -131,7 +131,7 @@ void scene_input_handler_boot_list(struct state *state, int input)
     else if (input & PAD_TRIANGLE)
     {
         u8 app_idx = state->boot_list.hilite_idx;
-        u32 attr = state->apps_attr[app_idx];
+        u32 attr = *array_u32_cget(state->boot_list_attr, app_idx);
         if (attr)
             scene_switch_to_options(state, app_idx);
     }
@@ -179,7 +179,7 @@ static void draw_button_guide(struct state *state)
     state->button_guide.cross = L"Launch";
 
     u8 app_idx = state->boot_list.hilite_idx;
-    u32 attr = state->apps_attr[app_idx];
+    u32 attr = *array_u32_cget(state->boot_list_attr, app_idx);
 
     state->button_guide.start = L"Settings";
 

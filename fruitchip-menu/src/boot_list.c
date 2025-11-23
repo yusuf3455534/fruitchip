@@ -62,12 +62,12 @@ static u8 *apps_read_index()
 
 static void apps_attr_populate(struct state *state)
 {
-    free(state->apps_attr);
+    array_u32_clear(state->boot_list_attr);
 
     u8 apps_count = list_len(&state->boot_list); // includes OSDSYS
-    state->apps_attr = malloc(sizeof(*state->apps_attr) * apps_count);
+    array_u32_init(state->boot_list_attr);
 
-    state->apps_attr[BOOT_ITEM_OSDSYS] = MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK | MODCHIP_APPS_ATTR_OSDSYS;
+    array_u32_push_back(state->boot_list_attr, MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK | MODCHIP_APPS_ATTR_OSDSYS); // OSDSYS
     for (u8 app_idx = 1; app_idx < apps_count; app_idx++)
     {
         u32 attr = app_read_attributes(app_idx);
@@ -78,7 +78,7 @@ static void apps_attr_populate(struct state *state)
         }
 
         print_debug("app_idx %i attr 0x%x\n", app_idx, attr);
-        state->apps_attr[app_idx] = attr;
+        array_u32_push_back(state->boot_list_attr, attr);
     }
 }
 
