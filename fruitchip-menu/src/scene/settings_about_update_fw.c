@@ -26,7 +26,7 @@ static struct update_state {
 
 static void pop_scene(struct state *state)
 {
-    while (list_len(&update_state.list)) list_pop_item(&update_state.list);
+    list_clear(&update_state.list);
     superscene_pop_scene();
     state->repaint = true;
 }

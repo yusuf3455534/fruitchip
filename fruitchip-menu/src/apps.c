@@ -86,7 +86,7 @@ bool apps_list_populate(struct state *state)
 {
     bool ret = false;
 
-    while (list_len(&state->boot_list)) list_pop_item(&state->boot_list);
+    list_clear(&state->boot_list);
 
     state->boot_list.hilite_idx = BOOT_ITEM_OSDSYS;
     state->boot_list.start_item_idx = 0;

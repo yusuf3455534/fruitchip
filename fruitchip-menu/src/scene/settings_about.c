@@ -19,7 +19,7 @@ static u32 item_idx_update_apps;
 
 static void pop_scene(struct state *state)
 {
-    while (list_len(&list)) list_pop_item(&list);
+    list_clear(&list);
     superscene_pop_scene();
     state->repaint = true;
 }
@@ -65,8 +65,6 @@ static void scene_paint_handler_settings(struct state *state)
 
 void scene_switch_to_settings_about(struct state *state)
 {
-    list.hilite_idx = 0;
-
     list_item_t item;
 
     item.left_text = wstring_new_static(L"Menu version");

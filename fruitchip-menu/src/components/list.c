@@ -158,15 +158,10 @@ u32 list_push_item(list_state_t *state, const list_item_t item)
     return idx;
 }
 
-void list_pop_item(list_state_t *state)
+void list_clear(list_state_t *state)
 {
-    if (!list_len(state))
-        return;
-
-    array_list_item_pop_back(NULL, state->items);
-
-    if (!list_len(state))
-        array_list_item_clear(state->items);
+    array_list_item_clear(state->items);
+    state->hilite_idx = 0;
 }
 
 size_t list_len(list_state_t *state)

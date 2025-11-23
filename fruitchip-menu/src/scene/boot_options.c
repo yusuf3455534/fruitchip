@@ -39,7 +39,7 @@ static void pop_scene(struct state *state)
     state->header = NULL;
     wstring_free(scene_state.header);
 
-    while (list_len(&scene_state.list)) list_pop_item(&scene_state.list);
+    list_clear(&scene_state.list);
 
     superscene_pop_scene();
     state->repaint = true;

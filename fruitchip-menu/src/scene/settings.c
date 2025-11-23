@@ -73,8 +73,7 @@ static void update_autoboot_delay_text(struct state *state)
 static void pop_scene(struct state *state)
 {
     superscene_pop_scene();
-    while (list_len(&list)) list_pop_item(&list);
-    list.hilite_idx = 0;
+    list_clear(&list);
     state->repaint = true;
 }
 
