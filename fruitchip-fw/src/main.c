@@ -55,6 +55,7 @@ void __time_critical_func(main_core1)()
 
 int __time_critical_func(main)()
 {
+    multicore_reset_core1();
     multicore_launch_core1(main_core1);
     boot_rom_data_out_init();
 
