@@ -10,4 +10,3 @@ void handle_write_write_lock(uint8_t);
 void handle_write_erase_flash_sector(uint8_t);
 void handle_write_write_flash_sector(uint8_t);
 void handle_write_reboot(uint8_t);
-void handle_write_ping(uint8_t);

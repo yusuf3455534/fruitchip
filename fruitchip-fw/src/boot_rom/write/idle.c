@@ -9,6 +9,7 @@
 #include "boot_rom/write/kv.h"
 #include "boot_rom/write/version.h"
 #include "boot_rom/write/flash.h"
+#include "boot_rom/write/test.h"
 
 void __time_critical_func(handle_write_cmd_group0)(uint8_t w)
 {
@@ -34,11 +35,32 @@ void __time_critical_func(handle_write_cmd_group0)(uint8_t w)
         assert_and_case(MODCHIP_CMD_ERASE_FLASH_SECTOR): write_handler = handle_write_erase_flash_sector; break;
         assert_and_case(MODCHIP_CMD_WRITE_FLASH_SECTOR): write_handler = handle_write_write_flash_sector; break;
         assert_and_case(MODCHIP_CMD_REBOOT): write_handler = handle_write_reboot; break;
-        assert_and_case(MODCHIP_CMD_PING): write_handler = handle_write_ping; break;
         default: write_handler = handle_write_idle; break;
     }
 
     #undef assert_and_case
+}
+
+void __time_critical_func(handle_write_cmd_group1)(uint8_t w)
+{
+    cmd_byte_counter++; // 2
+
+    // assert that cmd belongs to group1 (2nd byte), and extract 3rd byte to match on
+    #define assert_and_case(v) static_assert((uint8_t)(v >> 8) == MODCHIP_CMD_GROUP1); case ((uint8_t)(v >> 16))
+
+    switch (w)
+    {
+        assert_and_case(MODCHIP_CMD_TEST_DATA_OUT_WITH_STATUS_NO_DATA_NO_CRC): write_handler = handle_write_test_data_out_with_status_no_data_no_crc; break;
+        assert_and_case(MODCHIP_CMD_TEST_DATA_OUT_WITH_STATUS_WITH_DATA_NO_CRC): write_handler = handle_write_test_data_out_with_status_with_data_no_crc; break;
+        assert_and_case(MODCHIP_CMD_TEST_DATA_OUT_WITH_STATUS_WITH_DATA_WITH_CRC): write_handler = handle_write_test_data_out_with_status_with_data_with_crc; break;
+        assert_and_case(MODCHIP_CMD_TEST_DATA_OUT_NO_STATUS_WITH_DATA_WITH_CRC): write_handler = handle_write_test_data_out_no_status_with_data_with_crc; break;
+        assert_and_case(MODCHIP_CMD_TEST_DATA_OUT_NO_STATUS_WITH_DATA_NO_CRC): write_handler = handle_write_test_data_out_no_status_with_data_no_crc; break;
+        assert_and_case(MODCHIP_CMD_TEST_DATA_OUT_BUSY): write_handler = handle_write_test_data_out_busy_code; break;
+        default: write_handler = handle_write_idle; break;
+    }
+
+    #undef assert_and_case
+
 }
 
 void __time_critical_func(handle_write_cmd)(uint8_t w)
@@ -49,6 +71,9 @@ void __time_critical_func(handle_write_cmd)(uint8_t w)
     {
         case MODCHIP_CMD_GROUP0:
             write_handler = handle_write_cmd_group0;
+            break;
+        case MODCHIP_CMD_GROUP1:
+            write_handler = handle_write_cmd_group1;
             break;
         default:
             write_handler = handle_write_idle;

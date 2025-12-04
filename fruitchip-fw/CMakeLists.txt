@@ -34,6 +34,7 @@ add_executable(fruitchip-fw
     src/boot_rom/write/idle.c
     src/boot_rom/write/kv.c
     src/boot_rom/write/read_app.c
+    src/boot_rom/write/test.c
     src/boot_rom/write/version.c
     src/reset.c
     src/settings.c

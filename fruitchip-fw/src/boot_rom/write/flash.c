@@ -402,18 +402,3 @@ exit:
             write_handler = &handle_write_idle;
     }
 }
-
-void __time_critical_func(handle_write_ping)(uint8_t w)
-{
-    cmd_byte_counter++;
-
-    switch (cmd_byte_counter)
-    {
-        case 3: if (w != GET_BYTE(MODCHIP_CMD_PING, 3)) { goto exit; }
-            boot_rom_data_out_start_status_code(MODCHIP_CMD_RESULT_OK);
-exit:
-        [[fallthrough]];
-        default:
-            write_handler = &handle_write_idle;
-    }
-}
