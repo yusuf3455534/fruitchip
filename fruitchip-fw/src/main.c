@@ -43,7 +43,7 @@ void __time_critical_func(main_core1)()
     if (!apps_partition_detect())
     {
         printf("apps partition header not found\n");
-        colored_status_led_set_on_with_color(RGB_ERR);
+        colored_status_led_set_on_with_color(RGB_ERR_APPS);
     }
     else
     {

@@ -28,7 +28,7 @@ static void settings_reset(void)
     settings.menu_autoboot_item_idx = 0; // OSDSYS
 
     if (wear_leveling_write(0, &settings, sizeof(settings)) == WEAR_LEVELING_FAILED)
-        panic_with_led(RGB_ERR, "settings reset failed");
+        panic_with_led(RGB_ERR_SETTINGS, "settings reset failed");
 }
 
 void settings_init(void)
@@ -39,7 +39,7 @@ void settings_init(void)
         settings_reset();
 
         if (wear_leveling_init() == WEAR_LEVELING_FAILED)
-            panic_with_led(RGB_ERR, "wear leveling init failed");
+            panic_with_led(RGB_ERR_SETTINGS, "wear leveling init failed");
     }
 
     wear_leveling_read(0, &settings, sizeof(settings));

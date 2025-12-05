@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-#include "led_color.h"
-
 #include "data_out.h"
 
 #define xconcat(X, Y) concat(X, Y)
@@ -15,12 +13,6 @@ static uint8_t __not_in_flash("zero") ZERO = 0x00;
 static uint32_t __not_in_flash("status_code") data_out_status_code;
 
 static uint32_t __not_in_flash("busy_code") data_out_busy_code = MODCHIP_CMD_RESULT_BUSY;
-
-#if PICO_COLORED_STATUS_LED_USES_WRGB
-const uint32_t __not_in_flash("led.blue") BLUE = 0x00 << 24 | 0x00 << 16 | 0x00 << 8 | 0x10 << 0; // WGRB
-#else
-const uint32_t __not_in_flash("led.blue") BLUE = 0x00 << 24 | 0x00 << 16 | 0x10 << 8; // GRB
-#endif
 
 // region: control blocks
 typedef struct control_block {
@@ -55,18 +47,18 @@ static __not_in_flash("dma_sniff_setup") struct {
     .sniff_data = 0xFFFFFFFF,
 };
 
-const control_block_t CONTROL_BLOCK_SNIFFER_SETUP = {
-    .ctrl = (
-        DMA_CTRL_32 |
-        dma_ctrl_reg_field(TREQ_SEL, DREQ_FORCE) |
-        dma_ctrl_reg_field(INCR_READ, true) |
-        dma_ctrl_reg_field(INCR_WRITE, true) |
-        dma_ctrl_reg_field(CHAIN_TO, BOOT_ROM_DATA_OUT_CTRL1_CHAN)
-    ),
-    .read_addr = &DMA_SNIFF_SETUP,
-    .write_addr = &dma_hw->sniff_ctrl,
-    .trans_count = sizeof(DMA_SNIFF_SETUP) / sizeof(uint32_t),
-};
+#define CONTROL_BLOCK_SNIFFER_SETUP(channel) {                 \
+    .ctrl = (                                                  \
+        DMA_CTRL_32 |                                          \
+        dma_ctrl_reg_field(TREQ_SEL, DREQ_FORCE) |             \
+        dma_ctrl_reg_field(INCR_READ, true) |                  \
+        dma_ctrl_reg_field(INCR_WRITE, true) |                 \
+        dma_ctrl_reg_field(CHAIN_TO, channel)                  \
+    ),                                                         \
+    .read_addr = &DMA_SNIFF_SETUP,                             \
+    .write_addr = &dma_hw->sniff_ctrl,                         \
+    .trans_count = sizeof(DMA_SNIFF_SETUP) / sizeof(uint32_t), \
+}
 
 #define CONTROL_BLOCK_STATUS_CODE(channel) {        \
     .ctrl = (                                       \
@@ -75,18 +67,7 @@ const control_block_t CONTROL_BLOCK_SNIFFER_SETUP = {
     ),                                              \
     .read_addr = &data_out_status_code,             \
     .write_addr = &pio0->txf[BOOT_ROM_DATA_OUT_SM], \
-    .trans_count = sizeof(STATUS_CODE),             \
-}
-
-#define CONTROL_BLOCK_LED_SET(channel) {                                    \
-    .ctrl = (                                                               \
-        DMA_CTRL_32 |                                                       \
-        dma_ctrl_reg_field(TREQ_SEL, PIO_DREQ_NUM(RGB_PIO, RGB_SM, true)) | \
-        dma_ctrl_reg_field(CHAIN_TO, channel)                               \
-    ),                                                                      \
-    .read_addr = &BLUE,                                                     \
-    .write_addr = &RGB_PIO->txf[RGB_SM],                                    \
-    .trans_count = 1,                                                       \
+    .trans_count = sizeof(data_out_status_code),    \
 }
 
 const control_block_t CONTROL_BLOCK_CRC = {
@@ -126,8 +107,7 @@ const control_block_t CONTROL_BLOCK_NULL = {
 // region: control lists
 
 static control_block_t __not_in_flash("control_blocks.with_status_with_data_with_crc") WITH_STATUS_WITH_DATA_WITH_CRC[] = {
-    CONTROL_BLOCK_SNIFFER_SETUP,
-    CONTROL_BLOCK_LED_SET(BOOT_ROM_DATA_OUT_CTRL1_CHAN),
+    CONTROL_BLOCK_SNIFFER_SETUP(BOOT_ROM_DATA_OUT_CTRL1_CHAN),
     CONTROL_BLOCK_STATUS_CODE(BOOT_ROM_DATA_OUT_CTRL2_CHAN),
     // data out on second control block
     CONTROL_BLOCK_CRC,
@@ -136,8 +116,7 @@ static control_block_t __not_in_flash("control_blocks.with_status_with_data_with
 };
 
 static control_block_t __not_in_flash("control_blocks.no_status_with_data_with_crc") NO_STATUS_WITH_DATA_WITH_CRC[] = {
-    CONTROL_BLOCK_SNIFFER_SETUP,
-    CONTROL_BLOCK_LED_SET(BOOT_ROM_DATA_OUT_CTRL2_CHAN),
+    CONTROL_BLOCK_SNIFFER_SETUP(BOOT_ROM_DATA_OUT_CTRL2_CHAN),
     // data out on second control block
     CONTROL_BLOCK_CRC,
     CONTROL_BLOCK_EOT,
@@ -145,14 +124,12 @@ static control_block_t __not_in_flash("control_blocks.no_status_with_data_with_c
 };
 
 static control_block_t __not_in_flash("control_blocks.no_status_with_data_no_crc") NO_STATUS_WITH_DATA_NO_CRC[] = {
-    CONTROL_BLOCK_LED_SET(BOOT_ROM_DATA_OUT_CTRL2_CHAN),
     // data out on second control block
     CONTROL_BLOCK_EOT,
     CONTROL_BLOCK_NULL,
 };
 
 static control_block_t __not_in_flash("control_blocks.with_status_with_data_no_crc") WITH_STATUS_WITH_DATA_NO_CRC[] = {
-    CONTROL_BLOCK_LED_SET(BOOT_ROM_DATA_OUT_CTRL1_CHAN),
     CONTROL_BLOCK_STATUS_CODE(BOOT_ROM_DATA_OUT_CTRL2_CHAN),
     // data out on second control block
     CONTROL_BLOCK_EOT,
@@ -160,8 +137,7 @@ static control_block_t __not_in_flash("control_blocks.with_status_with_data_no_c
 };
 
 static control_block_t __not_in_flash("control_blocks.with_status_no_data_no_crc") WITH_STATUS_NO_DATA_NO_CRC[] = {
-    CONTROL_BLOCK_LED_SET(BOOT_ROM_DATA_OUT_CTRL1_CHAN),
-    CONTROL_BLOCK_STATUS_CODE(BOOT_ROM_DATA_OUT_CTRL2_CHAN),
+    CONTROL_BLOCK_STATUS_CODE(BOOT_ROM_DATA_OUT_CTRL1_CHAN),
     CONTROL_BLOCK_EOT,
     CONTROL_BLOCK_NULL,
 };
@@ -191,10 +167,6 @@ void __isr __time_critical_func(byte_out_irq_handler)()
     boot_rom_sniffers_start();
     boot_rom_data_out_reset();
 
-    // CONTROL_BLOCK_LED_SET directly sends the color to WS2812 SM,
-    // status_led library remembers the last color used,
-    // re-enable the LED to go back to previous color
-    colored_status_led_set_state(true);
 exit:
     pio_interrupt_clear(pio0, BOOT_ROM_BYTE_OUT_IRQ);
 }
@@ -312,10 +284,15 @@ __force_inline void __time_critical_func(boot_rom_data_out_start_data_without_st
 {
     boot_rom_sniffers_stop();
 
-    const volatile void *control_blocks = crc
-        ? NO_STATUS_WITH_DATA_WITH_CRC
-        : NO_STATUS_WITH_DATA_NO_CRC;
-    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_CTRL1_CHAN, control_blocks, true);
+    if (crc)
+    {
+        dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_CTRL1_CHAN, NO_STATUS_WITH_DATA_WITH_CRC, true);
+    }
+    else
+    {
+        dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_CTRL1_CHAN, NO_STATUS_WITH_DATA_NO_CRC, false);
+        dma_channel_start(BOOT_ROM_DATA_OUT_CTRL2_CHAN);
+    }
 
     boot_rom_data_out_start();
     boot_rom_sniffers_reset();
@@ -364,6 +341,6 @@ __force_inline void __time_critical_func(boot_rom_data_out_stop_busy_code)(uint3
     data_out_status_code = status_code;
 
     // chain reset -> status -> null to end data out
-    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_CTRL1_CHAN, &WITH_STATUS_NO_DATA_NO_CRC[1], false);
+    dma_channel_set_read_addr(BOOT_ROM_DATA_OUT_CTRL1_CHAN, &WITH_STATUS_NO_DATA_NO_CRC[0], false);
     dma_channel_set_chain_to(BOOT_ROM_DATA_OUT_BUSY_PONG, BOOT_ROM_DATA_OUT_CTRL1_CHAN, false);
 }

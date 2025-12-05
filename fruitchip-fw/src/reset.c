@@ -48,8 +48,6 @@ static void reset()
     pio_sm_drain_tx_fifo(pio0, BOOT_ROM_WRITE_SNIFFER_SM);
     pio_sm_drain_tx_fifo(pio0, BOOT_ROM_DATA_OUT_SM);
 
-    colored_status_led_set_state(true);
-
     disable_next_osdsys_hook = false;
     flash_write_lock = true;
     read_handler = handle_read_idle;
