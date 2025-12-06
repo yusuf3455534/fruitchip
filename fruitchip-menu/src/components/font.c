@@ -91,16 +91,19 @@ float font_text_width(const wchar_t *text)
     float lineWidth = 0;
     const BMFontChar *glyph;
 
-    for (int i = 0; text[i] != '\0'; i++)
+    if (text)
     {
-        if (text[i] == '\n')
-            return lineWidth;
+        for (int i = 0; text[i] != '\0'; i++)
+        {
+            if (text[i] == '\n')
+                return lineWidth;
 
-        glyph = font_get_glyph(text[i]);
-        if (glyph == NULL)
-            continue;
+            glyph = font_get_glyph(text[i]);
+            if (glyph == NULL)
+                continue;
 
-        lineWidth += glyph->xadvance;
+            lineWidth += glyph->xadvance;
+        }
     }
 
     return lineWidth;
@@ -128,6 +131,9 @@ float font_text_height(const wchar_t *text)
 // Returns the bottom Y coordinate of the last line that can be used to draw the next text
 int font_print(GSGLOBAL *gsGlobal, float x, float y, int z, uint64_t color, const wchar_t *text)
 {
+    if (!text)
+        return y;
+
     int curX = x;
     const BMFontChar *glyph;
 
