@@ -128,7 +128,7 @@ static bool write_uf2_sector(
 static void reboot_modchip_and_wait(struct state *state, enum modchip_reboot_mode mode)
 {
     u64 reboot_start = clock_us();
-    u64 reboot_deadline = reboot_start + (1000000 * 60); // one minute
+    u64 reboot_deadline = reboot_start + (1000000 * 30); // 30s
     if (modchip_reboot(mode))
     {
         // wait for reboot
