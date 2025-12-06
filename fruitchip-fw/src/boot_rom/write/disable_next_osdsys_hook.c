@@ -1,11 +1,12 @@
-#include "pico/platform/sections.h"
+#include <pico/platform/sections.h>
 
-#include "disable_next_osdsys_hook.h"
-#include <boot_rom/handler.h>
-#include <boot_rom/data_out.h>
-#include "idle.h"
 #include <modchip/errno.h>
 #include <modchip/cmd.h>
+
+#include <boot_rom/write/disable_next_osdsys_hook.h>
+#include <boot_rom/write/idle.h>
+#include <boot_rom/data_out.h>
+#include <boot_rom/handler.h>
 
 bool disable_next_osdsys_hook = false;
 

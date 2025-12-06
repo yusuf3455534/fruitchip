@@ -1,8 +1,8 @@
-#include "pico/platform/sections.h"
+#include <pico/platform/sections.h>
 
+#include <boot_rom/read/idle.h>
+#include <boot_rom/read/osdsys.h>
 #include <boot_rom/handler.h>
-#include "idle.h"
-#include "osdsys.h"
 
 void __time_critical_func(handle_read_idle)(uint8_t r)
 {

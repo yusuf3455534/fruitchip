@@ -1,12 +1,13 @@
-#include "pico/platform/sections.h"
+#include <pico/platform/sections.h>
 
-#include "get_payload.h"
-#include <boot_rom/handler.h>
-#include <boot_rom/data_out.h>
-#include <boot_rom/loader.h>
 #include <modchip/errno.h>
 #include <modchip/cmd.h>
-#include "idle.h"
+
+#include <boot_rom/write/get_payload.h>
+#include <boot_rom/write/idle.h>
+#include <boot_rom/data_out.h>
+#include <boot_rom/handler.h>
+#include <boot_rom/loader.h>
 
 void __time_critical_func(handle_write_get_ee_stage1_size)(uint8_t w)
 {

@@ -1,11 +1,12 @@
 #include "pico/platform/sections.h"
 
-#include "read_app.h"
-#include "apps.h"
 #include <modchip/errno.h>
 #include <modchip/cmd.h>
+
+#include <boot_rom/write/idle.h>
+#include <boot_rom/write/read_app.h>
 #include <boot_rom/handler.h>
-#include "idle.h"
+#include <apps.h>
 
 static uint32_t read_offset = 0;
 static uint32_t read_offset_xor = 0;

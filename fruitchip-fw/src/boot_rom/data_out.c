@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "data_out.h"
+#include <boot_rom/data_out.h>
 
 #define xconcat(X, Y) concat(X, Y)
 #define concat(X, Y) X ## Y

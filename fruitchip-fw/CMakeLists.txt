@@ -43,9 +43,9 @@ add_executable(fruitchip-fw
 target_include_directories(fruitchip-fw
     PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/fnv
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/wear_leveling
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/../fruitchip-include
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/status_led/include
 )
@@ -77,10 +77,15 @@ if (DEFINED PICO_DEFAULT_WS2812_PIN)
     )
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/boot_rom/boot_rom.pio ${CMAKE_CURRENT_BINARY_DIR}/boot_rom.pio)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/boot_rom/boot_rom.pio
+    ${CMAKE_CURRENT_BINARY_DIR}/include/boot_rom.pio
+)
 
 pico_generate_pio_header(fruitchip-fw
-    ${CMAKE_CURRENT_BINARY_DIR}/boot_rom.pio
+    ${CMAKE_CURRENT_BINARY_DIR}/include/boot_rom.pio
+    OUTPUT_DIR
+        ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
 configure_file(
@@ -129,7 +134,7 @@ set_property(TARGET fruitchip-fw APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-
 include(../git_version.cmake)
 
 configure_git_version_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/git_version.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/git_version.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/include/git_version.h
 )
 

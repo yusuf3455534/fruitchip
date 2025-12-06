@@ -1,6 +1,6 @@
-#include "handler.h"
 #include <boot_rom/read/idle.h>
 #include <boot_rom/write/idle.h>
+#include <boot_rom/handler.h>
 
 uint32_t cmd_byte_counter;
 
