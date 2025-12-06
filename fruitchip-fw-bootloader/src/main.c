@@ -12,6 +12,7 @@
 #include "modchip/update.h"
 #include "led_color.h"
 
+#include "binary_info.h"
 #include "git_version.h"
 
 static_assert(FLASH_SECTOR_SIZE == 4096, "");
