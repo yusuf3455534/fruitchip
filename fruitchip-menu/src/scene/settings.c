@@ -213,11 +213,11 @@ void scene_switch_to_settings(struct state *state)
     item.right_text = wstring_new_static(L">");
     list_push_item(&list, item);
 
-    struct scene scene = {
-        .input_handler = scene_input_handler_settings,
-        .paint_handler = scene_paint_handler_settings,
-    };
-    superscene_push_scene(&scene);
+    scene_t scene;
+    scene_init(&scene);
+    scene.input_handler = scene_input_handler_settings;
+    scene.paint_handler = scene_paint_handler_settings;
+    superscene_push_scene(scene);
 
     state->repaint = true;
 }

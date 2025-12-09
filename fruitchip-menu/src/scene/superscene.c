@@ -8,14 +8,40 @@
 #include "constants.h"
 #include "components/font.h"
 
+void scene_init(scene_t *obj)
+{
+    obj->tick_handler = NULL;
+    obj->input_handler = NULL;
+    obj->paint_handler = NULL;
+}
+
+void scene_copy(scene_t *obj, const scene_t *src)
+{
+    scene_init(obj);
+
+    if (src->tick_handler)
+        obj->tick_handler = src->tick_handler;
+
+    if (src->input_handler)
+        obj->input_handler = src->input_handler;
+
+    if (src->paint_handler)
+        obj->paint_handler = src->paint_handler;
+}
+
+void scene_free(scene_t *obj)
+{
+    (void)obj;
+}
+
 struct superscene superscene = { 0 };
 
 void scene_tick_handler_superscene(struct state *state)
 {
-    if (!superscene.scenes_len)
+    if (array_scene_empty_p(superscene.scenes))
         return;
 
-    struct scene *top_scene = superscene.scenes[superscene.scenes_len - 1];
+    scene_t *top_scene = array_scene_back(superscene.scenes);
 
     if (top_scene->tick_handler)
         top_scene->tick_handler(state);
@@ -23,16 +49,16 @@ void scene_tick_handler_superscene(struct state *state)
 
 void scene_input_handler_superscene(struct state *state, int input)
 {
-    if (!superscene.scenes_len)
+    if (array_scene_empty_p(superscene.scenes))
         return;
 
-    struct scene *top_scene = superscene.scenes[superscene.scenes_len - 1];
+    scene_t *top_scene = array_scene_back(superscene.scenes);
 
     if (top_scene->input_handler)
         top_scene->input_handler(state, input);
 }
 
-void draw_header(struct state *state)
+static void draw_header(struct state *state)
 {
     if (!state->header)
         return;
@@ -98,9 +124,9 @@ void scene_paint_handler_superscene(struct state *state)
 
     superscene_clear(state);
 
-    if (superscene.scenes_len)
+    if (!array_scene_empty_p(superscene.scenes))
     {
-        struct scene *top_scene = superscene.scenes[superscene.scenes_len - 1];
+        scene_t *top_scene = array_scene_back(superscene.scenes);
 
         if (top_scene->paint_handler)
             top_scene->paint_handler(state);
@@ -111,27 +137,14 @@ void scene_paint_handler_superscene(struct state *state)
     superscene_paint(state);
 }
 
-void superscene_push_scene(struct scene *scene)
+void superscene_push_scene(scene_t scene)
 {
-    superscene.scenes_len += 1;
-    superscene.scenes = realloc(superscene.scenes, sizeof(superscene.scenes) * superscene.scenes_len);
-
-    superscene.scenes[superscene.scenes_len - 1] = malloc(sizeof(*scene));
-
-    memcpy(superscene.scenes[superscene.scenes_len - 1], scene, sizeof(*scene));
+    array_scene_push_back(superscene.scenes, scene);
 }
 
 void superscene_pop_scene()
 {
-    if (superscene.scenes_len == 0)
-        return;
-
-    superscene.scenes_len -= 1;
-
-    struct scene *dst = superscene.scenes[superscene.scenes_len];
-    free(dst);
-
-    superscene.scenes = realloc(superscene.scenes, sizeof(superscene.scenes) * superscene.scenes_len);
+    array_scene_pop_back(NULL, superscene.scenes);
 }
 
 void superscene_clear_button_guide(struct state *state)

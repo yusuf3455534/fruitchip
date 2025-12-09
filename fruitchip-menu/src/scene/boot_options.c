@@ -163,12 +163,11 @@ void scene_switch_to_options(struct state *state, u8 app_idx)
         scene_state.item_idx_osdsys_skip_hdd = list_push_item(&scene_state.list, item);
     }
 
-
-    struct scene scene = {
-        .input_handler = scene_input_handler_options,
-        .paint_handler = scene_paint_handler_options,
-    };
-    superscene_push_scene(&scene);
+    scene_t scene;
+    scene_init(&scene);
+    scene.input_handler = scene_input_handler_options;
+    scene.paint_handler = scene_paint_handler_options;
+    superscene_push_scene(scene);
 
     state->repaint = true;
 }

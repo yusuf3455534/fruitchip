@@ -34,10 +34,10 @@ static void scene_paint_handler_startup(struct state *state)
 
 void scene_switch_to_init(struct state *state)
 {
-    struct scene scene = {
-        .input_handler = scene_input_handler_startup,
-        .paint_handler = scene_paint_handler_startup,
-    };
-    superscene_push_scene(&scene);
+    scene_t scene;
+    scene_init(&scene);
+    scene.input_handler = scene_input_handler_startup;
+    scene.paint_handler = scene_paint_handler_startup;
+    superscene_push_scene(scene);
     state->repaint = true;
 }

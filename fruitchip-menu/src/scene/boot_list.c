@@ -305,12 +305,12 @@ void scene_switch_to_boot_list(struct state *state)
 {
     masswatch_set_connect_callback(mass_connected_handler, (void *)state);
 
-    struct scene scene = {
-        .tick_handler = scene_tick_handler_boot_list,
-        .input_handler = scene_input_handler_boot_list,
-        .paint_handler = scene_paint_handler_boot_list,
-    };
-    superscene_push_scene(&scene);
+    scene_t scene;
+    scene_init(&scene);
+    scene.tick_handler = scene_tick_handler_boot_list;
+    scene.input_handler = scene_input_handler_boot_list;
+    scene.paint_handler = scene_paint_handler_boot_list;
+    superscene_push_scene(scene);
 
     bool ret = apps_list_populate(state);
     if (!ret)

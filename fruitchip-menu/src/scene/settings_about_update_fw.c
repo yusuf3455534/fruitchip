@@ -205,11 +205,11 @@ void scene_switch_to_settings_about_update_fw(struct state *state)
     item.right_text = NULL;
     list_push_item(&update_state.list, item);
 
-    struct scene scene = {
-        .input_handler = scene_input_handler_settings_update,
-        .paint_handler = scene_paint_handler_settings_update,
-    };
-    superscene_push_scene(&scene);
+    scene_t scene;
+    scene_init(&scene);
+    scene.input_handler = scene_input_handler_settings_update;
+    scene.paint_handler = scene_paint_handler_settings_update;
+    superscene_push_scene(scene);
 
     state->repaint = true;
 }

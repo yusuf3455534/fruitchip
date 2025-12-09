@@ -80,10 +80,10 @@ void scene_switch_to_message(struct state *state, wchar_t *text)
 
     array_message_state_push_back(scene_state, msg_state);
 
-    struct scene scene = {
-        .input_handler = scene_input_handler_message,
-        .paint_handler = scene_paint_handler_message,
-    };
-    superscene_push_scene(&scene);
+    scene_t scene;
+    scene_init(&scene);
+    scene.input_handler = scene_input_handler_message;
+    scene.paint_handler = scene_paint_handler_message;
+    superscene_push_scene(scene);
     state->repaint = true;
 }
