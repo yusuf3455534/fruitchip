@@ -45,13 +45,27 @@ static void scene_paint_handler_file_found(struct state *state)
     wchar_t *line1 = L"Do not reset the console while update is in progress";
     font_print(state->gs, ITEM_TEXT_X_START, ITEM_TEXT_Y(0), 1, FG, line1);
 
-    wchar_t *line2 = L"If firmware fails to start after update, you'll need to dissamble";
-    wchar_t *line3 = L"the console to manually flash working firmware";
-    font_print(state->gs, ITEM_TEXT_X_START, ITEM_TEXT_Y(2), 1, FG, line2);
-    font_print(state->gs, ITEM_TEXT_X_START, ITEM_TEXT_Y(3), 1, FG, line3);
+
+    int line4_y_idx;
+
+    if (state->update_type == UPDATE_TYPE_FW)
+    {
+        wchar_t *line2 = L"If firmware fails to start after update, you'll need to dissamble";
+        wchar_t *line3 = L"the console to manually flash working firmware";
+        font_print(state->gs, ITEM_TEXT_X_START, ITEM_TEXT_Y(2), 1, FG, line2);
+        font_print(state->gs, ITEM_TEXT_X_START, ITEM_TEXT_Y(3), 1, FG, line3);
+
+        line4_y_idx = 5;
+        list.start_item_idx = 6;
+    }
+    else
+    {
+        line4_y_idx = 2;
+        list.start_item_idx = 3;
+    }
 
     wchar_t *line4 = L"Start the update?";
-    font_print(state->gs, ITEM_TEXT_X_START, ITEM_TEXT_Y(5), 1, FG, line4);
+    font_print(state->gs, ITEM_TEXT_X_START, ITEM_TEXT_Y(line4_y_idx), 1, FG, line4);
     list_draw_items(state->gs, &list);
 
     superscene_clear_button_guide(state);
@@ -69,7 +83,6 @@ void scene_switch_to_update_found()
 
     array_list_item_init(list.items);
     list.hilite_idx = 0;
-    list.start_item_idx = 6;
     list.max_items = MAX_LIST_ITEMS_ON_SCREEN;
 
     list_item_t item;
