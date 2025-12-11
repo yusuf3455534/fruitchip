@@ -14,7 +14,7 @@ void __time_critical_func(handle_write_fw_git_rev)(uint8_t w)
     switch (cmd_byte_counter)
     {
         case 3: if (w != GET_BYTE(MODCHIP_CMD_FW_GIT_REV, 3)) { goto exit; }
-            boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, GIT_REV, 8, false);
+            boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, GIT_REV, 8, true);
 exit:
         [[fallthrough]];
         default:
@@ -29,7 +29,7 @@ void __time_critical_func(handle_write_bootloader_git_rev)(uint8_t w)
     switch (cmd_byte_counter)
     {
         case 3: if (w != GET_BYTE(MODCHIP_CMD_BOOTLOADER_GIT_REV, 3)) { goto exit; }
-            boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, BOOTLOADER_GIT_REV, 8, false);
+            boot_rom_data_out_start_data_with_status_code(MODCHIP_CMD_RESULT_OK, BOOTLOADER_GIT_REV, 8, true);
 exit:
         [[fallthrough]];
         default:

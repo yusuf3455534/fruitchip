@@ -2,6 +2,7 @@
 
 #include "modchip/io.h"
 #include "modchip/cmd.h"
+#include "crc32.h"
 
 inline static bool modchip_fw_git_rev(char *dst)
 {
@@ -10,6 +11,11 @@ inline static bool modchip_fw_git_rev(char *dst)
         return false;
 
     modchip_peek_n(dst, 8);
+
+    u32 crc_expected = modchip_peek_u32();
+    u32 crc_actual = crc32((void *)dst, 8);
+    if (crc_expected != crc_actual)
+        return false;
 
     return true;
 }
@@ -21,6 +27,11 @@ inline static bool modchip_bootloader_git_rev(char *dst)
         return false;
 
     modchip_peek_n(dst, 8);
+
+    u32 crc_expected = modchip_peek_u32();
+    u32 crc_actual = crc32((void *)dst, 8);
+    if (crc_expected != crc_actual)
+        return false;
 
     return true;
 }
