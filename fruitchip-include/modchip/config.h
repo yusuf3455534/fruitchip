@@ -22,3 +22,17 @@ inline static u32 modchip_pin_config(enum modchip_pin pin)
 
     return mask;
 }
+
+inline static u32 modchip_pin_config_with_retry(enum modchip_pin pin, u8 attemps)
+{
+    u32 ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_pin_config(pin);
+        if (ret != 0)
+            break;
+    }
+
+    return ret;
+}

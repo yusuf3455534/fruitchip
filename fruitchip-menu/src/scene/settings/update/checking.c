@@ -107,9 +107,9 @@ static void scene_tick_handler_update_checking(struct state *state)
     u32 update_partition_size;
     u32 apps_partition_size;
 
-    bool failed = !modchip_get_partition_size(MODCHIP_PARTITION_IDX_FW, &fw_partition_size);
-    failed |= !modchip_get_partition_size(MODCHIP_PARTITION_IDX_FW_UPDATE, &update_partition_size);
-    failed = !modchip_get_partition_size(MODCHIP_PARTITION_IDX_APPS, &apps_partition_size);
+    bool failed = !modchip_get_partition_size_with_retry(MODCHIP_PARTITION_IDX_FW, &fw_partition_size, MODCHIP_CMD_RETRIES);
+    failed |= !modchip_get_partition_size_with_retry(MODCHIP_PARTITION_IDX_FW_UPDATE, &update_partition_size, MODCHIP_CMD_RETRIES);
+    failed = !modchip_get_partition_size_with_retry(MODCHIP_PARTITION_IDX_APPS, &apps_partition_size, MODCHIP_CMD_RETRIES);
 
     if (failed)
     {

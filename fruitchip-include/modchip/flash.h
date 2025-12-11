@@ -19,6 +19,20 @@ inline static bool modchip_get_partition_size(u8 idx, u32 *flash_size)
     return crc_expected == crc_actual;
 }
 
+inline static bool modchip_get_partition_size_with_retry(u8 idx, u32 *flash_size, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_get_partition_size(idx, flash_size);
+        if (ret)
+            break;
+    }
+
+    return ret;
+}
+
 inline static bool modchip_get_flash_sector_size(u32 *sector_size)
 {
     modchip_poke_u32(MODCHIP_CMD_GET_FLASH_SECTOR_SIZE);
@@ -32,6 +46,20 @@ inline static bool modchip_get_flash_sector_size(u32 *sector_size)
     return crc_expected == crc_actual;
 }
 
+inline static bool modchip_get_flash_sector_size_with_retry(u32 *sector_size, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_get_flash_sector_size(sector_size);
+        if (ret)
+            break;
+    }
+
+    return ret;
+}
+
 inline static bool modchip_set_write_lock(bool lock)
 {
     modchip_poke_u32(MODCHIP_CMD_WRITE_LOCK);
@@ -42,6 +70,20 @@ inline static bool modchip_set_write_lock(bool lock)
         return false;
 
     return true;
+}
+
+inline static bool modchip_set_write_lock_with_retry(bool lock, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_set_write_lock(lock);
+        if (ret)
+            break;
+    }
+
+    return ret;
 }
 
 inline static bool modchip_write_flash_sector(enum modchip_partition partition_idx, u32 sector_idx, u8 *sector, u32 sector_size)
@@ -76,6 +118,20 @@ inline static bool modchip_write_flash_sector(enum modchip_partition partition_i
     }
 }
 
+inline static bool modchip_write_flash_sector_with_retry(enum modchip_partition partition_idx, u32 sector_idx, u8 *sector, u32 sector_size, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_write_flash_sector(partition_idx, sector_idx, sector, sector_size);
+        if (ret)
+            break;
+    }
+
+    return ret;
+}
+
 inline static bool modchip_erase_flash_sector(enum modchip_partition partition_idx, u32 sector_idx, u32 sector_count)
 {
     modchip_poke_u32(MODCHIP_CMD_ERASE_FLASH_SECTOR);
@@ -102,6 +158,20 @@ inline static bool modchip_erase_flash_sector(enum modchip_partition partition_i
     }
 }
 
+inline static bool modchip_erase_flash_sector_with_retry(enum modchip_partition partition_idx, u32 sector_idx, u32 sector_count, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_erase_flash_sector(partition_idx, sector_idx, sector_count);
+        if (ret)
+            break;
+    }
+
+    return ret;
+}
+
 inline static bool modchip_reboot(enum modchip_reboot_mode mode)
 {
     modchip_poke_u32(MODCHIP_CMD_REBOOT);
@@ -111,6 +181,20 @@ inline static bool modchip_reboot(enum modchip_reboot_mode mode)
         return false;
 
     return true;
+}
+
+inline static bool modchip_reboot_with_retry(enum modchip_reboot_mode mode, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_reboot(mode);
+        if (ret)
+            break;
+    }
+
+    return ret;
 }
 
 inline static bool modchip_ping()

@@ -92,21 +92,21 @@ void pin_config_get_current(
 {
     if (pin_mask_data)
     {
-        *pin_mask_data = modchip_pin_config(MODCHIP_PIN_BOOT_ROM_DATA);
+        *pin_mask_data = modchip_pin_config_with_retry(MODCHIP_PIN_BOOT_ROM_DATA, MODCHIP_CMD_RETRIES);
     }
 
     if (pin_mask_ce)
     {
-        *pin_mask_ce = modchip_pin_config(MODCHIP_PIN_BOOT_ROM_CE);
+        *pin_mask_ce = modchip_pin_config_with_retry(MODCHIP_PIN_BOOT_ROM_CE, MODCHIP_CMD_RETRIES);
     }
 
     if (pin_mask_oe)
     {
-        *pin_mask_oe = modchip_pin_config(MODCHIP_PIN_BOOT_ROM_OE);
+        *pin_mask_oe = modchip_pin_config_with_retry(MODCHIP_PIN_BOOT_ROM_OE, MODCHIP_CMD_RETRIES);
     }
 
     if (pin_mask_rst)
     {
-        *pin_mask_rst = modchip_pin_config(MODCHIP_PIN_RESET);
+        *pin_mask_rst = modchip_pin_config_with_retry(MODCHIP_PIN_RESET, MODCHIP_CMD_RETRIES);
     }
 }

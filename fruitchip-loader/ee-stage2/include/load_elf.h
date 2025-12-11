@@ -47,11 +47,12 @@ inline static bool ExecPS2FromModchipStage3(int argc, char *argv[])
     elf_pheader_t eph;
     int i;
 
-    s32 ret = modchip_stage3_read(
+    s32 ret = modchip_stage3_read_with_retry(
         0,
         sizeof(eh),
         &eh,
-        true
+        true,
+        MODCHIP_CMD_RETRIES
     );
     if (ret)
     {
@@ -69,11 +70,12 @@ inline static bool ExecPS2FromModchipStage3(int argc, char *argv[])
     // then zero out any non-loaded regions.
     for (i = 0; i < eh.phnum; i++)
     {
-        if (modchip_stage3_read(
+        if (modchip_stage3_read_with_retry(
                 eh.phoff + (sizeof(eph) * i),
                 sizeof(eph),
                 &eph,
-                true
+                true,
+                MODCHIP_CMD_RETRIES
             ))
         {
             sio_puts("failed to read elf section header");
@@ -83,11 +85,12 @@ inline static bool ExecPS2FromModchipStage3(int argc, char *argv[])
         if (eph.type != ELF_PT_LOAD)
             continue;
 
-        if (modchip_stage3_read(
+        if (modchip_stage3_read_with_retry(
                 eph.offset,
                 eph.filesz,
                 eph.vaddr,
-                true
+                true,
+                MODCHIP_CMD_RETRIES
             ))
         {
             sio_puts("failed to read elf section");
@@ -112,12 +115,13 @@ inline static bool ExecPS2FromModchipApps(u8 app_idx, int argc, char *argv[])
     elf_pheader_t eph;
     int i;
 
-    s32 ret = modchip_apps_read(
+    s32 ret = modchip_apps_read_with_retry(
         MODCHIP_APPS_DATA_OFFSET,
         sizeof(eh),
         app_idx,
         &eh,
-        true
+        true,
+        MODCHIP_CMD_RETRIES
     );
     if (ret)
     {
@@ -135,12 +139,13 @@ inline static bool ExecPS2FromModchipApps(u8 app_idx, int argc, char *argv[])
     // then zero out any non-loaded regions.
     for (i = 0; i < eh.phnum; i++)
     {
-        if (modchip_apps_read(
+        if (modchip_apps_read_with_retry(
                 MODCHIP_APPS_DATA_OFFSET + eh.phoff + (sizeof(eph) * i),
                 sizeof(eph),
                 app_idx,
                 &eph,
-                true
+                true,
+                MODCHIP_CMD_RETRIES
             ))
         {
             sio_puts("failed to read elf section header");
@@ -150,12 +155,13 @@ inline static bool ExecPS2FromModchipApps(u8 app_idx, int argc, char *argv[])
         if (eph.type != ELF_PT_LOAD)
             continue;
 
-        if (modchip_apps_read(
+        if (modchip_apps_read_with_retry(
                 MODCHIP_APPS_DATA_OFFSET + eph.offset,
                 eph.filesz,
                 app_idx,
                 eph.vaddr,
-                true
+                true,
+                MODCHIP_CMD_RETRIES
             ))
         {
             sio_puts("failed to read elf section");

@@ -23,8 +23,15 @@ inline static void panic(const char *msg)
 
 inline static void modchip_cmd_or_panic(u32 cmd)
 {
-    modchip_poke_u32(cmd);
-    u32 ret = modchip_peek_u32();
+    u32 ret;
+
+    for (u8 attemp = 0; attemp < MODCHIP_CMD_RETRIES; attemp++)
+    {
+        modchip_poke_u32(cmd);
+        ret = modchip_peek_u32();
+        if (ret == MODCHIP_CMD_RESULT_OK) break;
+    }
+
     if (ret == BOOT_ROM_ADDR_VALUE) panic("EE1: cmd no response");
     if (ret != MODCHIP_CMD_RESULT_OK) panic("EE1: cmd bad crc");
 }

@@ -30,12 +30,12 @@
 static void autoboot_read_settings(struct state *state)
 {
     u32 v;
-    bool r = modchip_settings_get(MODCHIP_SETTINGS_MENU_AUTOBOOT, &v);
+    bool r = modchip_settings_get_with_retry(MODCHIP_SETTINGS_MENU_AUTOBOOT, &v, MODCHIP_CMD_RETRIES);
     if (r) state->autoboot = v;
     else state->autoboot = false;
     printf("MODCHIP_SETTINGS_MENU_AUTOBOOT %u\n", state->autoboot);
 
-    r = modchip_settings_get(MODCHIP_SETTINGS_MENU_AUTOBOOT_DELAY, &state->autoboot_delay_sec);
+    r = modchip_settings_get_with_retry(MODCHIP_SETTINGS_MENU_AUTOBOOT_DELAY, &state->autoboot_delay_sec, MODCHIP_CMD_RETRIES);
     if (!r) state->autoboot_delay_sec = 5;
     printf("MODCHIP_SETTINGS_MENU_AUTOBOOT_DELAY %u\n", state->autoboot_delay_sec);
 }

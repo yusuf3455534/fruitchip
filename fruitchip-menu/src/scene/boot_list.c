@@ -32,7 +32,7 @@
 
 static void boot_osdsys(struct state *state)
 {
-    modchip_cmd(MODCHIP_CMD_DISABLE_NEXT_OSDSYS_HOOK);
+    modchip_cmd_with_retry(MODCHIP_CMD_DISABLE_NEXT_OSDSYS_HOOK, MODCHIP_CMD_RETRIES);
     SifExitCmd();
 
     int argc = 0;
@@ -55,7 +55,7 @@ static void boot_fwfs(struct state *state)
 
     if (attr & MODCHIP_APPS_ATTR_DISABLE_NEXT_OSDSYS_HOOK)
     {
-        modchip_cmd(MODCHIP_CMD_DISABLE_NEXT_OSDSYS_HOOK);
+        modchip_cmd_with_retry(MODCHIP_CMD_DISABLE_NEXT_OSDSYS_HOOK, MODCHIP_CMD_RETRIES);
     }
 
     if (attr & MODCHIP_APPS_ATTR_OSDSYS)

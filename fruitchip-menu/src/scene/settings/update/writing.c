@@ -39,7 +39,7 @@ static bool write_update_sector(
     memcpy(sector, update + offset, sector_size);
 
     u32 sector_idx = offset /sector_size;
-    int ret = modchip_write_flash_sector(partition_idx, sector_idx, sector, sector_size);
+    int ret = modchip_write_flash_sector_with_retry(partition_idx, sector_idx, sector, sector_size, MODCHIP_CMD_RETRIES);
 
     free(sector);
 
@@ -60,20 +60,20 @@ static void scene_tick_handler_update_writing(struct state *state)
             break;
     }
 
-    if (!modchip_set_write_lock(false))
+    if (!modchip_set_write_lock_with_retry(false, MODCHIP_CMD_RETRIES))
     {
         pop_scene_and_show_message(state, L"Failed to unlock the write lock");
         goto exit;
     }
 
-    if (!modchip_erase_flash_sector(partition_idx, 0, 1))
+    if (!modchip_erase_flash_sector_with_retry(partition_idx, 0, 1, MODCHIP_CMD_RETRIES))
     {
         pop_scene_and_show_message(state, L"Failed to erase first sector");
         goto exit;
     }
 
     u32 sector_size;
-    if (!modchip_get_flash_sector_size(&sector_size))
+    if (!modchip_get_flash_sector_size_with_retry(&sector_size, MODCHIP_CMD_RETRIES))
     {
         pop_scene_and_show_message(state, L"Failed to get flash sector size");
         goto exit;
@@ -100,7 +100,7 @@ static void scene_tick_handler_update_writing(struct state *state)
     scene_switch_to_update_rebooting(update_type);
 
 exit:
-    if (!modchip_set_write_lock(true))
+    if (!modchip_set_write_lock_with_retry(true, MODCHIP_CMD_RETRIES))
     {
         print_debug("Failed to lock the write lock\n");
     }

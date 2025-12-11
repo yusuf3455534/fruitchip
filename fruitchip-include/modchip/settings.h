@@ -23,6 +23,20 @@ inline static bool modchip_settings_get(u16 key, u32 *value)
     return crc_expected == crc_actual;
 }
 
+inline static bool modchip_settings_get_with_retry(u16 key, u32 *value, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_settings_get(key, value);
+        if (ret)
+            break;
+    }
+
+    return ret;
+}
+
 inline static bool modchip_settings_set(u16 key, u32 value)
 {
     modchip_poke_u32(MODCHIP_CMD_KV_SET);
@@ -45,4 +59,18 @@ inline static bool modchip_settings_set(u16 key, u32 value)
                 return false;
         }
     }
+}
+
+inline static bool modchip_settings_set_with_retry(u16 key, u32 value, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_settings_set(key, value);
+        if (ret)
+            break;
+    }
+
+    return ret;
 }

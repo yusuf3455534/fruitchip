@@ -137,7 +137,7 @@ void scene_switch_to_options(struct state *state, u8 app_idx)
     scene_state.list.start_item_idx = 0;
     scene_state.list.max_items = MAX_LIST_ITEMS_ON_SCREEN;
 
-    modchip_settings_get(MODCHIP_SETTINGS_MENU_OSDSYS_SETTINGS, &state->osdsys.value);
+    modchip_settings_get_with_retry(MODCHIP_SETTINGS_MENU_OSDSYS_SETTINGS, &state->osdsys.value, MODCHIP_CMD_RETRIES);
     scene_state.settings.value = state->osdsys.value;
 
     list_item_t item;

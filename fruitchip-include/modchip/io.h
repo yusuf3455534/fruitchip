@@ -10,6 +10,8 @@
 #define BOOT_ROM_ADDR (0x1FC00000 + 0x000000C0)
 #define BOOT_ROM_ADDR_VALUE 0x00000000 // value BOOT_ROM_ADDR points to
 
+#define MODCHIP_CMD_RETRIES 3
+
 inline static void modchip_poke_u8(u8 byte)
 {
     *(volatile u8*)BOOT_ROM_ADDR = byte;
@@ -62,4 +64,18 @@ inline static bool modchip_cmd(u32 cmd)
 {
     modchip_poke_u32(cmd);
     return modchip_peek_u32() == MODCHIP_CMD_RESULT_OK;
+}
+
+inline static bool modchip_cmd_with_retry(u32 cmd, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_cmd(cmd);
+        if (ret)
+            break;
+    }
+
+    return ret;
 }

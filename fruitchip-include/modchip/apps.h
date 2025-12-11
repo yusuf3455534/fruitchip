@@ -52,6 +52,21 @@ inline static s32 modchip_stage3_read(u32 offset, u32 size, void *dst, bool with
     }
 }
 
+inline static s32 modchip_stage3_read_with_retry(u32 offset, u32 size, void *dst, bool with_crc, u8 attemps)
+{
+    u32 ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_stage3_read(offset, size, dst, with_crc);
+        if (ret == 0)
+            break;
+    }
+
+    return ret;
+}
+
+
 inline static s32 modchip_apps_read(u32 offset, u32 size, u8 app_idx, void *dst, bool with_crc)
 {
     modchip_poke_u32(MODCHIP_CMD_READ_APP);
@@ -84,4 +99,18 @@ inline static s32 modchip_apps_read(u32 offset, u32 size, u8 app_idx, void *dst,
     {
         return 0;
     }
+}
+
+inline static s32 modchip_apps_read_with_retry(u32 offset, u32 size, u8 app_idx, void *dst, bool with_crc, u8 attemps)
+{
+    u32 ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_apps_read(offset, size, app_idx, dst, with_crc);
+        if (ret == 0)
+            break;
+    }
+
+    return ret;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tamtypes.h>
+
 #include "modchip/io.h"
 #include "modchip/cmd.h"
 #include "crc32.h"
@@ -20,6 +22,20 @@ inline static bool modchip_fw_git_rev(char *dst)
     return true;
 }
 
+inline static bool modchip_fw_git_rev_with_retry(char *dst, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_fw_git_rev(dst);
+        if (ret)
+            break;
+    }
+
+    return ret;
+}
+
 inline static bool modchip_bootloader_git_rev(char *dst)
 {
     modchip_poke_u32(MODCHIP_CMD_BOOTLOADER_GIT_REV);
@@ -34,4 +50,18 @@ inline static bool modchip_bootloader_git_rev(char *dst)
         return false;
 
     return true;
+}
+
+inline static bool modchip_bootloader_git_rev_with_retry(char *dst, u8 attemps)
+{
+    bool ret;
+
+    for (u8 attemp = 0; attemp < attemps; attemp++)
+    {
+        ret = modchip_bootloader_git_rev(dst);
+        if (ret)
+            break;
+    }
+
+    return ret;
 }

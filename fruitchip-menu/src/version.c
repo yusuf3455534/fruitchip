@@ -7,7 +7,7 @@ static char BOOTLOADER_GIT_REV[9] = "N/A";
 
 bool version_init_firmware()
 {
-    if (modchip_fw_git_rev(FW_GIT_REV))
+    if (modchip_fw_git_rev_with_retry(FW_GIT_REV, MODCHIP_CMD_RETRIES))
     {
         return true;
     }
@@ -28,7 +28,7 @@ bool version_init_firmware()
 
 bool version_init_bootloader()
 {
-    if (modchip_bootloader_git_rev(BOOTLOADER_GIT_REV))
+    if (modchip_bootloader_git_rev_with_retry(BOOTLOADER_GIT_REV, MODCHIP_CMD_RETRIES))
     {
         return true;
     }

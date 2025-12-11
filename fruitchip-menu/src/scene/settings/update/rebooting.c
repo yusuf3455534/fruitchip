@@ -31,7 +31,7 @@ static void scene_tick_handler_update_rebooting(struct state *state)
 
     u64 reboot_start = clock_us();
     u64 reboot_deadline = reboot_start + (1000000 * 30); // 30s
-    if (!modchip_reboot(reboot_mode))
+    if (!modchip_reboot_with_retry(reboot_mode, MODCHIP_CMD_RETRIES))
     {
         scene_switch_to_message(state, L"Failed to reboot the modchip");
         return;

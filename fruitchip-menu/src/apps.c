@@ -106,7 +106,7 @@ bool apps_list_populate(struct state *state)
 
     free(apps_index);
 
-    int res = modchip_settings_get(MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX, &state->autoboot_item_idx);
+    int res = modchip_settings_get_with_retry(MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX, &state->autoboot_item_idx, MODCHIP_CMD_RETRIES);
     print_debug("MODCHIP_SETTINGS_MENU_AUTOBOOT_ITEM_IDX %u ret %i\n", state->autoboot_item_idx, res);
     if (res && state->autoboot_item_idx < list_len(&state->boot_list))
         state->boot_list.hilite_idx = state->autoboot_item_idx;

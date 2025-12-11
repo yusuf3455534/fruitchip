@@ -136,7 +136,14 @@ static int fwfs_open(iop_file_t *file, const char *name, int flags)
 
     if (fd->mode == FWFS_MODE_DATA_CHAR)
     {
-        s32 ret = modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, sizeof(fd->size) + sizeof(fd->attr), fd->idx, &fd->size, true);
+        s32 ret = modchip_apps_read_with_retry(
+            MODCHIP_APPS_SIZE_OFFSET,
+            sizeof(fd->size) + sizeof(fd->attr),
+            fd->idx,
+            &fd->size,
+            true,
+            MODCHIP_CMD_RETRIES
+        );
         DPRINTF("open: data: result %i\n", ret);
         if (ret)
         {
@@ -148,7 +155,14 @@ static int fwfs_open(iop_file_t *file, const char *name, int flags)
     }
     else if (fd->mode == FWFS_MODE_ATTR_CHAR)
     {
-        s32 ret = modchip_apps_read(MODCHIP_APPS_ATTR_SIZE, sizeof(fd->attr), fd->idx, &fd->attr, true);
+        s32 ret = modchip_apps_read_with_retry(
+            MODCHIP_APPS_ATTR_SIZE,
+            sizeof(fd->attr),
+            fd->idx,
+            &fd->attr,
+            true,
+            MODCHIP_CMD_RETRIES
+        );
         DPRINTF("open: attr: result %i\n", ret);
         if (ret)
         {
@@ -221,7 +235,14 @@ static int fwfs_read(iop_file_t *file, void *ptr, int size)
     u32 available_size = MIN((u32)size, remaining_size);
     DPRINTF("read: rem %i ava %i\n", remaining_size, available_size);
 
-    s32 ret = modchip_apps_read(fd->offset, available_size, fd->idx, ptr, true);
+    s32 ret = modchip_apps_read_with_retry(
+        fd->offset,
+        available_size,
+        fd->idx,
+        ptr,
+        true,
+        MODCHIP_CMD_RETRIES
+    );
     DPRINTF("read: cmd: off %i size %i idx %i: ret %i\n", fd->offset, size, fd->idx, ret);
     if (ret)
     {
@@ -253,7 +274,14 @@ static int fwfs_getstat(iop_file_t *file, const char *name, io_stat_t *stat)
     {
         fwfs_file_t file = {};
 
-        s32 ret = modchip_apps_read(MODCHIP_APPS_SIZE_OFFSET, sizeof(fd->size) + sizeof(fd->attr), idx, &file.size, true);
+        s32 ret = modchip_apps_read_with_retry(
+            MODCHIP_APPS_SIZE_OFFSET,
+            sizeof(fd->size) + sizeof(fd->attr),
+            idx,
+            &file.size,
+            true,
+            MODCHIP_CMD_RETRIES
+        );
         DPRINTF("stat: result %i\n", ret);
         if (ret)
         {
