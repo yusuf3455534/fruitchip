@@ -2,20 +2,19 @@
 
 #include <modchip/flash.h>
 
-#include <components/font.h>
+#include <components/progress_bar.h>
 #include <scene/settings/update.h>
 #include <scene/superscene.h>
 #include <scene/message.h>
 #include <constants.h>
 #include <utils.h>
 
+static u32 countdown;
+
+#define REBOOT_DEADLINE_SEC 30
+
 static void scene_tick_handler_update_rebooting(struct state *state)
 {
-    scene_paint_handler_superscene(state);
-    superscene_pop_scene();
-
-    state->repaint = true;
-
     enum modchip_reboot_mode reboot_mode;
     switch (state->update_type)
     {
@@ -28,9 +27,10 @@ static void scene_tick_handler_update_rebooting(struct state *state)
     }
 
     u64 reboot_start = clock_us();
-    u64 reboot_deadline = reboot_start + (1000000 * 30); // 30s
+    u64 reboot_deadline = reboot_start + (1000000 * REBOOT_DEADLINE_SEC);
     if (!modchip_reboot_with_retry(reboot_mode, MODCHIP_CMD_RETRIES))
     {
+        superscene_pop_scene();
         scene_switch_to_message(state, L"Failed to reboot the modchip");
         return;
     }
@@ -40,24 +40,29 @@ static void scene_tick_handler_update_rebooting(struct state *state)
     {
         if (modchip_ping()) break;
 
+        state->repaint = true;
+        scene_paint_handler_superscene(state);
+
         sleep(1);
+        countdown -= 1;
+
         if (clock_us() > reboot_deadline)
         {
+            superscene_pop_scene();
             scene_switch_to_message(state, L"Failed to reboot the modchip, timed out");
             return;
         }
     }
 
+    superscene_pop_scene();
     scene_switch_to_update_complete();
+    state->repaint = true;
 }
 
 static void scene_paint_handler_update_rebooting(struct state *state)
 {
-    float y1 = state->gs->Height / 2.0;
-    float y2 = y1 + 4.0;
-
-    wchar_t *text2 = L"Rebooting modchip";
-    font_print_centered(state->gs, y2 + 2, 1, FG, text2);
+    float progress = (float)countdown / REBOOT_DEADLINE_SEC;
+    progress_bar_paint_center_with_message(state->gs, progress, L"Rebooting modchip");
 
     superscene_clear_button_guide(state);
 }
@@ -69,4 +74,6 @@ void scene_switch_to_update_rebooting()
     scene.tick_handler = scene_tick_handler_update_rebooting;
     scene.paint_handler = scene_paint_handler_update_rebooting;
     superscene_push_scene(scene);
+
+    countdown = REBOOT_DEADLINE_SEC;
 }
