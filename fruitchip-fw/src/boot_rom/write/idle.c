@@ -3,6 +3,7 @@
 #include <modchip/cmd.h>
 #include <boot_rom/handler.h>
 #include "boot_rom/write/idle.h"
+#include "boot_rom/write/configuration.h"
 #include "boot_rom/write/disable_next_osdsys_hook.h"
 #include "boot_rom/write/get_payload.h"
 #include "boot_rom/write/read_app.h"
@@ -36,6 +37,7 @@ void __time_critical_func(handle_write_cmd_group0)(uint8_t w)
         assert_and_case(MODCHIP_CMD_ERASE_FLASH_SECTOR): write_handler = handle_write_erase_flash_sector; break;
         assert_and_case(MODCHIP_CMD_WRITE_FLASH_SECTOR): write_handler = handle_write_write_flash_sector; break;
         assert_and_case(MODCHIP_CMD_REBOOT): write_handler = handle_write_reboot; break;
+        assert_and_case(MODCHIP_CMD_PIN_CONFIG): write_handler = handle_write_pin_config; break;
         default: write_handler = handle_write_idle; break;
     }
 

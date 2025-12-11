@@ -28,6 +28,7 @@
 #define MODCHIP_CMD_WRITE_FLASH_SECTOR       ((0x3477 << 16) | (MODCHIP_CMD_GROUP0 << 8) | MODCHIP_CMD_PREFIX)
 #define MODCHIP_CMD_REBOOT                   ((0x6d06 << 16) | (MODCHIP_CMD_GROUP0 << 8) | MODCHIP_CMD_PREFIX)
 #define MODCHIP_CMD_PING                     MODCHIP_CMD_TEST_DATA_OUT_WITH_STATUS_NO_DATA_NO_CRC
+#define MODCHIP_CMD_PIN_CONFIG               ((0x0431 << 16) | (MODCHIP_CMD_GROUP0 << 8) | MODCHIP_CMD_PREFIX)
 
 enum
 {
@@ -52,4 +53,12 @@ enum modchip_reboot_mode
     // Reboot into bootloader and initiate FW update
     MODCHIP_REBOOT_MODE_UPDATE = 1,
     MODCHIP_REBOOT_MODE_TOTAL,
+};
+
+enum modchip_pin
+{
+    MODCHIP_PIN_BOOT_ROM_DATA,
+    MODCHIP_PIN_BOOT_ROM_CE,
+    MODCHIP_PIN_BOOT_ROM_OE,
+    MODCHIP_PIN_RESET,
 };
