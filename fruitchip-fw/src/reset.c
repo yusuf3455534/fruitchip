@@ -23,6 +23,13 @@ static void reset()
     boot_rom_data_out_reset();
     boot_rom_sniffers_reset();
 
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_CTRL1_CHAN].al1_ctrl, (0u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS );
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_CTRL2_CHAN].al1_ctrl, (0u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS );
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_DATA1_CHAN].al1_ctrl, (0u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS );
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_DATA2_CHAN].al1_ctrl, (0u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS );
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_BUSY_PING].al1_ctrl,  (0u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS );
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_BUSY_PONG].al1_ctrl,  (0u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS );
+
     dma_hw->abort = 1 << BOOT_ROM_DATA_OUT_CTRL1_CHAN |
                     1 << BOOT_ROM_DATA_OUT_CTRL2_CHAN |
                     1 << BOOT_ROM_DATA_OUT_DATA1_CHAN |
@@ -52,6 +59,13 @@ static void reset()
     flash_write_lock = true;
     read_handler = handle_read_idle;
     write_handler = handle_write_idle;
+
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_CTRL1_CHAN].al1_ctrl, (1u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS);
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_CTRL2_CHAN].al1_ctrl, (1u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS);
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_DATA1_CHAN].al1_ctrl, (1u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS);
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_DATA2_CHAN].al1_ctrl, (1u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS);
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_BUSY_PING].al1_ctrl,  (1u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS);
+    hw_write_masked(&dma_hw->ch[BOOT_ROM_DATA_OUT_BUSY_PONG].al1_ctrl,  (1u << DMA_CH0_CTRL_TRIG_EN_LSB), DMA_CH0_CTRL_TRIG_EN_BITS);
 
     boot_rom_sniffers_start();
 }
